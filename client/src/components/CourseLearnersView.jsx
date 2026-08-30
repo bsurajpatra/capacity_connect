@@ -175,14 +175,14 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Completed':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        return 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
       case 'At Risk':
-        return 'bg-rose-100 text-rose-800 border-rose-300';
+        return 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800';
       case 'In Progress':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800';
       case 'Not Started':
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+        return 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-[var(--border)]';
     }
   };
 
@@ -190,12 +190,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
   const getSkillBadge = (level) => {
     switch (level) {
       case 'Advanced':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
       case 'Proficient':
-        return 'bg-teal-100 text-teal-800 border-teal-300';
+        return 'bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800';
       case 'Beginner':
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-200';
+        return 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border-[var(--border)]';
     }
   };
 
@@ -204,15 +204,15 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
     const p = Math.max(0, Math.min(100, Number(progress) || 0));
     return (
       <div className="flex items-center gap-2 min-w-[120px]">
-        <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+        <div className="flex-1 h-2 bg-[var(--surface-muted)] rounded-full overflow-hidden border border-[var(--border)]">
           <div
             className={`h-full rounded-full transition-all duration-300 ${
-              p === 100 ? 'bg-emerald-500' : p < 25 ? 'bg-amber-500' : 'bg-teal-600'
+              p === 100 ? 'bg-emerald-500' : p < 25 ? 'bg-amber-500' : 'bg-[var(--primary)]'
             }`}
             style={{ width: `${p}%` }}
           />
         </div>
-        <span className="font-mono font-bold text-xs text-slate-800 w-9 text-right">{p}%</span>
+        <span className="font-mono font-bold text-xs text-[var(--text-primary)] w-9 text-right">{p}%</span>
       </div>
     );
   };
@@ -220,23 +220,23 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-4 shadow-xs space-y-3 transition-colors">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 min-w-[220px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-2.5" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search learners by name, email, department..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-white"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-[var(--border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] text-[var(--text-primary)] bg-[var(--surface)] placeholder-[var(--text-muted)] transition-colors"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-2.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -246,12 +246,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
           {/* Filters Row */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {/* Status Filter */}
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Status:</span>
+            <div className="flex items-center gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+              <span className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Status:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-semibold text-[var(--text-secondary)] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Statuses</option>
                 <option value="Not Started">Not Started</option>
@@ -262,12 +262,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
             </div>
 
             {/* Progress Filter */}
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Progress:</span>
+            <div className="flex items-center gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+              <span className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Progress:</span>
               <select
                 value={progressFilter}
                 onChange={(e) => setProgressFilter(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-semibold text-[var(--text-secondary)] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Progress</option>
                 <option value="0-25">0% - 25%</option>
@@ -278,12 +278,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
             </div>
 
             {/* Assessment Filter */}
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Score:</span>
+            <div className="flex items-center gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+              <span className="text-[10px] uppercase font-bold text-[var(--text-muted)]">Score:</span>
               <select
                 value={assessmentFilter}
                 onChange={(e) => setAssessmentFilter(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-semibold text-[var(--text-secondary)] focus:outline-none cursor-pointer"
               >
                 <option value="all">All Scores</option>
                 <option value="passed">Passing (≥60%)</option>
@@ -293,12 +293,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
             </div>
 
             {/* Sort Dropdown */}
-            <div className="flex items-center gap-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-1">
-              <ArrowUpDown className="w-3 h-3 text-slate-400" />
+            <div className="flex items-center gap-1 bg-[var(--surface-muted)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+              <ArrowUpDown className="w-3 h-3 text-[var(--text-muted)]" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer"
+                className="bg-transparent text-xs font-semibold text-[var(--text-secondary)] focus:outline-none cursor-pointer"
               >
                 <option value="progress_desc">Highest Progress</option>
                 <option value="progress_asc">Lowest Progress</option>
@@ -313,7 +313,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="px-2 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded text-xs font-semibold flex items-center gap-1 border border-slate-200 transition-colors"
+                className="px-2.5 py-1.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-muted)] rounded-lg text-xs font-semibold flex items-center gap-1 border border-[var(--border)] transition-colors"
                 title="Reset all filters"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -324,17 +324,17 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
         </div>
 
         {/* Filter Stats Pill Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[var(--border)] text-[11px] text-[var(--text-muted)]">
           <span>
             Showing <strong>{processedLearners.length}</strong> of <strong>{learners.length}</strong> enrolled learners
           </span>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-semibold border border-emerald-200 text-[10px]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800 text-[10px]">
               <CheckCircle2 className="w-3 h-3 text-emerald-600" />
               {learners.filter((l) => l.status === 'Completed').length} Completed
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 text-rose-800 font-semibold border border-rose-200 text-[10px]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800 text-[10px]">
               <AlertTriangle className="w-3 h-3 text-rose-600" />
               {learners.filter((l) => l.status === 'At Risk').length} At Risk
             </span>
@@ -344,16 +344,16 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
 
       {/* Main Content: Table & Mobile Cards */}
       {loading ? (
-        <div className="py-20 flex justify-center bg-white border border-slate-200 rounded-xl shadow-sm">
+        <div className="py-20 flex justify-center bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs">
           <Loading message="Loading course learner roster..." />
         </div>
       ) : error ? (
         <ErrorMessage message={error} onRetry={fetchLearners} />
       ) : processedLearners.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center text-xs text-slate-500 shadow-sm space-y-3">
-          <Users className="w-10 h-10 text-slate-300 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-800">No matching learners found</h3>
-          <p className="text-slate-400 max-w-sm mx-auto">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-12 text-center text-xs text-[var(--text-muted)] shadow-xs space-y-3">
+          <Users className="w-10 h-10 text-[var(--text-muted)] mx-auto opacity-50" />
+          <h3 className="text-sm font-bold text-[var(--text-primary)]">No matching learners found</h3>
+          <p className="text-[var(--text-muted)] max-w-sm mx-auto">
             {hasActiveFilters
               ? 'Try modifying or resetting your search filters to view enrolled learners.'
               : 'There are currently no learners enrolled in this course.'}
@@ -362,19 +362,19 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
             <button
               type="button"
               onClick={handleClearFilters}
-              className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-xs"
+              className="px-4 py-2 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white rounded-lg text-xs font-semibold shadow-xs transition-colors"
             >
               Clear All Filters
             </button>
           )}
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs overflow-hidden transition-colors">
           {/* Desktop Table View */}
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                <tr className="bg-[var(--surface-muted)] border-b border-[var(--border)] text-[var(--text-muted)] font-bold uppercase tracking-wider text-[10px]">
                   <th className="py-3 px-4">Learner Name & Email</th>
                   <th className="py-3 px-4">Enrollment Date</th>
                   <th className="py-3 px-4">Course Progress</th>
@@ -385,7 +385,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
+              <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
                 {processedLearners.map((item) => {
                   const t = item.trainee || {};
                   const progress = item.courseProgress !== undefined ? item.courseProgress : item.averageProgress || 0;
@@ -396,12 +396,12 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                     <tr
                       key={t._id}
                       onClick={() => handleInspectLearner(item)}
-                      className="hover:bg-slate-50/90 transition-colors cursor-pointer group"
+                      className="hover:bg-[var(--surface-muted)]/60 transition-colors cursor-pointer group"
                     >
                       {/* Name & Identifier */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200">
+                          <div className="w-8 h-8 rounded-full bg-[var(--primary-soft)] text-[var(--primary)] font-bold text-xs flex items-center justify-center shrink-0 border border-[var(--primary-border,#BFDBFE)]">
                             {t.name
                               ?.split(' ')
                               .map((n) => n[0])
@@ -410,10 +410,10 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                               .slice(0, 2) || 'TL'}
                           </div>
                           <div>
-                            <span className="font-bold text-slate-900 block group-hover:text-emerald-700 transition-colors">
+                            <span className="font-bold text-[var(--text-primary)] block group-hover:text-[var(--primary)] transition-colors">
                               {t.name}
                             </span>
-                            <span className="text-[11px] text-slate-400 font-mono block">
+                            <span className="text-[11px] text-[var(--text-muted)] font-mono block">
                               {t.email}
                             </span>
                           </div>
@@ -421,7 +421,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                       </td>
 
                       {/* Enrollment Date */}
-                      <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-[var(--text-secondary)] font-medium whitespace-nowrap">
                         {enrolledDate}
                       </td>
 
@@ -434,23 +434,23 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                       <td className="py-3.5 px-4 text-center">
                         {item.averageScore !== null && item.averageScore !== undefined ? (
                           <span
-                            className={`font-bold font-mono text-xs px-2 py-0.5 rounded border ${
+                            className={`font-bold font-mono text-xs px-2 py-0.5 rounded-md border ${
                               item.averageScore >= 60
-                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                : 'bg-rose-50 text-rose-800 border-rose-200'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                                : 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
                             }`}
                           >
                             {item.averageScore}%
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[11px]">--</span>
+                          <span className="text-[var(--text-muted)] text-[11px]">--</span>
                         )}
                       </td>
 
                       {/* Current Skill Level */}
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${getSkillBadge(
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${getSkillBadge(
                             item.currentSkillLevel
                           )}`}
                         >
@@ -461,7 +461,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                       {/* Status */}
                       <td className="py-3.5 px-4 text-center">
                         <span
-                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${getStatusBadge(
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${getStatusBadge(
                             item.status
                           )}`}
                         >
@@ -470,7 +470,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                       </td>
 
                       {/* Last Activity */}
-                      <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-[var(--text-muted)] whitespace-nowrap">
                         {lastAct}
                       </td>
 
@@ -479,7 +479,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                         <button
                           type="button"
                           onClick={() => handleInspectLearner(item)}
-                          className="px-2.5 py-1 text-xs font-semibold text-teal-700 hover:text-teal-900 border border-teal-300 rounded hover:bg-teal-50 transition-colors inline-flex items-center gap-1"
+                          className="px-2.5 py-1 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-soft)] hover:bg-[var(--primary-soft)]/80 border border-[var(--primary-border,#BFDBFE)] rounded-lg transition-colors inline-flex items-center gap-1"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>Inspect</span>
@@ -493,7 +493,7 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
           </div>
 
           {/* Mobile Cards View */}
-          <div className="md:hidden divide-y divide-slate-100">
+          <div className="md:hidden divide-y divide-[var(--border)]">
             {processedLearners.map((item) => {
               const t = item.trainee || {};
               const progress = item.courseProgress !== undefined ? item.courseProgress : item.averageProgress || 0;
@@ -502,15 +502,15 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                 <div
                   key={t._id}
                   onClick={() => handleInspectLearner(item)}
-                  className="p-4 space-y-3 hover:bg-slate-50 cursor-pointer"
+                  className="p-4 space-y-3 hover:bg-[var(--surface-muted)]/60 cursor-pointer"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-bold text-slate-900 text-sm">{t.name}</h4>
-                      <p className="text-slate-400 font-mono text-xs">{t.email}</p>
+                      <h4 className="font-bold text-[var(--text-primary)] text-sm">{t.name}</h4>
+                      <p className="text-[var(--text-muted)] font-mono text-xs">{t.email}</p>
                     </div>
                     <span
-                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${getStatusBadge(
+                      className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${getStatusBadge(
                         item.status
                       )}`}
                     >
@@ -519,17 +519,17 @@ const CourseLearnersView = ({ courseId, courseTitle = 'Course' }) => {
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Progress</span>
+                    <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] block">Progress</span>
                     {renderProgressBar(progress)}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
-                    <span className="text-slate-500">
-                      Score: <strong>{item.averageScore !== null ? `${item.averageScore}%` : '--'}</strong>
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[var(--border)]">
+                    <span className="text-[var(--text-muted)]">
+                      Score: <strong className="text-[var(--text-primary)]">{item.averageScore !== null ? `${item.averageScore}%` : '--'}</strong>
                     </span>
                     <button
                       type="button"
-                      className="text-teal-700 font-semibold inline-flex items-center gap-1"
+                      className="text-[var(--primary)] font-semibold inline-flex items-center gap-1"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Details</span>

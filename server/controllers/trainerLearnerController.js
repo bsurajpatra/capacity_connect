@@ -15,7 +15,7 @@ const Assessment = require('../models/Assessment');
 const getTrainerLearners = async (req, res, next) => {
   try {
     const trainerId = req.user._id;
-    const { courseId } = req.query;
+    const { courseId } = req.query || {};
 
     // 1. Fetch courses owned strictly by this trainer
     const courseQuery = { trainer: trainerId };

@@ -4,7 +4,7 @@ import { createCourseApi } from '../../services/api';
 import Button from '../../components/Button';
 import ErrorMessage from '../../components/ErrorMessage';
 import SkillsSelect from '../../components/SkillsSelect';
-import { BookPlus, ArrowLeft } from 'lucide-react';
+import { BookPlus, ArrowLeft, GraduationCap, Sparkles, Lightbulb } from 'lucide-react';
 
 const CreateCoursePage = () => {
   const [formData, setFormData] = useState({
@@ -64,33 +64,41 @@ const CreateCoursePage = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Breadcrumb Header */}
+      {/* ====================================================
+          1. BREADCRUMB & HEADER
+          ==================================================== */}
       <div className="flex items-center gap-3">
         <Link
           to="/trainer/courses"
-          className="p-1.5 rounded hover:bg-slate-100 text-slate-600 transition-colors"
+          className="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--primary-border,#BFDBFE)] transition-colors shadow-2xs"
           title="Back to courses"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[var(--surface-muted)] text-[var(--primary)] border border-[var(--border)] mb-1">
+            <GraduationCap className="w-3 h-3" />
+            <span>Course Creator</span>
+          </div>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] tracking-tight">
             Create New Course
           </h1>
-          <p className="text-xs text-slate-500">
-            Define basic course metadata. You will add modules and resources on the next step.
+          <p className="text-xs text-[var(--text-muted)]">
+            Define course metadata, difficulty, and skill mapping. You will structure modules and media on the next step.
           </p>
         </div>
       </div>
 
       {error && <ErrorMessage message={error} onRetry={() => setError(null)} />}
 
-      {/* Course Form */}
-      <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 shadow-sm">
+      {/* ====================================================
+          2. COURSE FORM CONTAINER
+          ==================================================== */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 sm:p-8 shadow-xs transition-colors">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="title">
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5" htmlFor="title">
               Course Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -102,17 +110,17 @@ const CreateCoursePage = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g. Modern Full-Stack Development with React & Node.js"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3.5 py-2.5 text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
               disabled={loading}
             />
-            <span className="text-[11px] text-slate-400 block mt-1">
+            <span className="text-[11px] text-[var(--text-muted)] block mt-1">
               Max 150 characters ({formData.title.length}/150)
             </span>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="description">
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5" htmlFor="description">
               Course Description <span className="text-red-500">*</span>
             </label>
             <textarea
@@ -122,16 +130,16 @@ const CreateCoursePage = () => {
               required
               value={formData.description}
               onChange={handleChange}
-              placeholder="Comprehensive summary of course objectives, syllabus scope, and learning outcomes..."
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="Comprehensive summary of course objectives, syllabus scope, target learners, and practical outcomes..."
+              className="w-full px-3.5 py-2.5 text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors leading-relaxed"
               disabled={loading}
             />
           </div>
 
           {/* Prerequisites */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="prerequisites">
-              Prerequisites <span className="text-slate-400 font-normal">(Optional)</span>
+            <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5" htmlFor="prerequisites">
+              Prerequisites <span className="text-[var(--text-muted)] font-normal">(Optional)</span>
             </label>
             <input
               id="prerequisites"
@@ -139,8 +147,8 @@ const CreateCoursePage = () => {
               type="text"
               value={formData.prerequisites}
               onChange={handleChange}
-              placeholder="e.g. Basic JavaScript, HTML, CSS"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              placeholder="e.g. Basic JavaScript ES6, HTML5, and CSS fundamentals"
+              className="w-full px-3.5 py-2.5 text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
               disabled={loading}
             />
           </div>
@@ -149,7 +157,7 @@ const CreateCoursePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Category */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="category">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5" htmlFor="category">
                 Category <span className="text-red-500">*</span>
               </label>
               <input
@@ -159,15 +167,15 @@ const CreateCoursePage = () => {
                 required
                 value={formData.category}
                 onChange={handleChange}
-                placeholder="e.g. Software Engineering, Data Science"
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                placeholder="e.g. Software Engineering, Cloud Architecture"
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] placeholder-[var(--text-muted)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
                 disabled={loading}
               />
             </div>
 
             {/* Level */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1" htmlFor="level">
+              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5" htmlFor="level">
                 Target Difficulty Level <span className="text-red-500">*</span>
               </label>
               <select
@@ -175,7 +183,7 @@ const CreateCoursePage = () => {
                 name="level"
                 value={formData.level}
                 onChange={handleChange}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
                 disabled={loading}
               >
                 <option value="beginner">Beginner</option>
@@ -190,16 +198,27 @@ const CreateCoursePage = () => {
             selectedSkills={selectedSkills}
             onChange={setSelectedSkills}
             label="Skills Covered"
-            helperText="Associate active skills from the Skill Library that trainees will learn, and set the target proficiency level."
+            helperText="Associate verified skills that trainees will attain upon passing the course final assessment."
             withProficiency={true}
             disabled={loading}
           />
 
+          {/* Educational Best Practices Tip Box */}
+          <div className="bg-[var(--primary-soft)] border border-[var(--primary-border,#BFDBFE)] rounded-xl p-4 flex items-start gap-3">
+            <Lightbulb className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <p className="font-bold text-[var(--primary)]">Course Creation Tip</p>
+              <p className="text-[var(--text-secondary)] leading-relaxed">
+                Courses are initially created in <strong>Draft</strong> state. You can structure modules, upload video/document resources, and add knowledge quizzes in the curriculum manager before publishing to the catalog.
+              </p>
+            </div>
+          </div>
+
           {/* Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-[var(--border)] flex items-center justify-end gap-3">
             <Link
               to="/trainer/courses"
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 border border-slate-300 rounded hover:bg-slate-50 transition-colors"
+              className="px-4 py-2.5 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-muted)] transition-colors"
             >
               Cancel
             </Link>
@@ -209,7 +228,7 @@ const CreateCoursePage = () => {
               size="md"
               loading={loading}
               disabled={loading}
-              className="inline-flex items-center gap-2 text-xs font-semibold"
+              className="inline-flex items-center gap-2 text-xs font-semibold px-5 py-2.5 shadow-xs"
             >
               <BookPlus className="w-4 h-4" />
               <span>{loading ? 'Creating...' : 'Save as Draft & Continue'}</span>

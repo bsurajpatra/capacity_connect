@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Course = require('../models/Course');
 
 /**
@@ -7,12 +8,12 @@ const Course = require('../models/Course');
  * @returns {Promise<{ authorized: boolean, course: Object|null, statusCode: number, message: string }>}
  */
 const verifyCourseAccess = async (courseId, user) => {
-  if (!courseId) {
+  if (!courseId || !mongoose.Types.ObjectId.isValid(String(courseId))) {
     return {
       authorized: false,
       course: null,
       statusCode: 400,
-      message: 'Course ID is required',
+      message: 'Invalid or missing Course ID',
     };
   }
 

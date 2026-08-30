@@ -1,13 +1,26 @@
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
+const pdfParse = require('pdf-parse');
 const Assessment = require('../models/Assessment');
 const QuizAttempt = require('../models/QuizAttempt');
 const Certificate = require('../models/Certificate');
 const Course = require('../models/Course');
 const Module = require('../models/Module');
+const Resource = require('../models/Resource');
 const Enrollment = require('../models/Enrollment');
 const User = require('../models/User');
 const { generateCertificatePDF, generateCertificateId } = require('../utils/certificateGenerator');
-const { generateQuestionExplanation, checkRateLimit } = require('../services/openaiService');
+const { extractTextFromDocument } = require('../utils/documentExtractor');
+const {
+  generateQuestionExplanation,
+  generateAssessmentQuestionsFromContent,
+  generateQuestionsFromMatterPdf,
+  regenerateSingleQuestionFromContent,
+  parseQuestionsFromPdfText,
+  suggestAnswersForQuestions,
+  checkRateLimit,
+} = require('../services/openaiService');
 const { invalidateTraineeAICache } = require('./recommendationController');
 
 /**
@@ -1402,6 +1415,322 @@ const explainAssessmentQuestion = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Generate AI Assessment Questions Grounded in Course/Module Content (Phase 7.7)
+ * @route   POST /api/assessments/ai/generate-questions
+ * @access  Private (Trainer, Admin)
+ */
+const generateAiQuestions = async (req, res, next) => {
+  try {
+    const { courseId, moduleId, count = 5, difficulty = 'medium', topic = '' } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: 'courseId is required for AI question generation.' });
+    }
+
+    const course = await Course.findById(courseId).populate('skills.skill', 'name category');
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    // Strict ownership check
+    if (req.user.role === 'trainer') {
+      const isOwner = course.trainer.toString() === req.user._id.toString() || course.trainer.toString() === req.user.id;
+      if (!isOwner) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only generate assessment questions for courses you instruct.',
+        });
+      }
+    }
+
+    let moduleDoc = null;
+    if (moduleId) {
+      moduleDoc = await Module.findById(moduleId);
+      if (!moduleDoc || moduleDoc.course.toString() !== course._id.toString()) {
+        return res.status(404).json({ success: false, message: 'Module not found in this course.' });
+      }
+    }
+
+    // Retrieve attached educational resources
+    const resourceFilter = { course: course._id };
+    if (moduleId) resourceFilter.module = moduleId;
+    const resources = await Resource.find(resourceFilter).select('title description type');
+
+    // Rate limit check
+    const rateCheck = checkRateLimit(req.user._id.toString());
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        success: false,
+        message: `Too many AI requests. Please wait ${Math.ceil((rateCheck.remainingMs || 5000) / 1000)} seconds before requesting more questions.`,
+      });
+    }
+
+    const result = await generateAssessmentQuestionsFromContent({
+      course,
+      moduleDoc,
+      resources,
+      count: Math.max(1, Math.min(20, parseInt(count, 10) || 5)),
+      difficulty,
+      topic,
+      userId: req.user._id.toString(),
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        questions: result.questions,
+        source: result.source,
+        contentSummary: result.contentSummary,
+      },
+    });
+  } catch (error) {
+    console.error('[POST /api/assessments/ai/generate-questions] Error:', error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Regenerate a Single AI MCQ Question from Course/Module Content (Phase 7.7)
+ * @route   POST /api/assessments/ai/regenerate-question
+ * @access  Private (Trainer, Admin)
+ */
+const regenerateSingleAiQuestion = async (req, res, next) => {
+  try {
+    const { courseId, moduleId, existingQuestionText = '', difficulty = 'medium', topic = '' } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: 'courseId is required.' });
+    }
+
+    const course = await Course.findById(courseId).populate('skills.skill', 'name category');
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    // Ownership check
+    if (req.user.role === 'trainer') {
+      const isOwner = course.trainer.toString() === req.user._id.toString() || course.trainer.toString() === req.user.id;
+      if (!isOwner) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only generate questions for your own courses.',
+        });
+      }
+    }
+
+    let moduleDoc = null;
+    if (moduleId) {
+      moduleDoc = await Module.findById(moduleId);
+    }
+
+    const resources = await Resource.find({ course: course._id, ...(moduleId ? { module: moduleId } : {}) });
+
+    const result = await regenerateSingleQuestionFromContent({
+      course,
+      moduleDoc,
+      resources,
+      existingQuestionText,
+      difficulty,
+      topic,
+      userId: req.user._id.toString(),
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('[POST /api/assessments/ai/regenerate-question] Error:', error);
+    next(error);
+  }
+};
+
+/**
+ * @desc    Extract & Parse Assessment Questions from Uploaded PDF (Phase 7.7)
+ * @route   POST /api/assessments/questions/import-pdf
+ * @access  Private (Trainer, Admin)
+ */
+const importQuestionsFromPdf = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please upload a valid PDF file.',
+      });
+    }
+
+    const {
+      courseId,
+      moduleId,
+      importType = 'content_matter',
+      count = 5,
+      difficulty = 'medium',
+      topic = '',
+    } = req.body;
+
+    if (!courseId) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({ success: false, message: 'courseId is required.' });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    // Ownership check
+    if (req.user.role === 'trainer') {
+      const isOwner = course.trainer.toString() === req.user._id.toString() || course.trainer.toString() === req.user.id;
+      if (!isOwner) {
+        try { fs.unlinkSync(req.file.path); } catch (e) {}
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. You can only import questions for your own courses.',
+        });
+      }
+    }
+
+    let moduleDoc = null;
+    if (moduleId) {
+      moduleDoc = await Module.findById(moduleId);
+    }
+
+    // Read and extract text from uploaded document (PDF, DOCX, DOC, PPTX, PPT, TXT)
+    let pdfText = '';
+    try {
+      pdfText = await extractTextFromDocument(req.file.path, req.file.originalname);
+    } catch (parseErr) {
+      console.warn('Document parse error:', parseErr.message);
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+      return res.status(400).json({
+        success: false,
+        message: "We couldn't extract readable text from this document. Please upload a standard text-based PDF, Word (.docx), PowerPoint (.pptx), or Text file.",
+      });
+    } finally {
+      // Safe cleanup of temporary uploaded file
+      try {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      } catch (e) {}
+    }
+
+    if (!pdfText || pdfText.trim().length < 20) {
+      return res.status(400).json({
+        success: false,
+        message: "We couldn't extract readable text from this document. The document may be empty or contain only non-OCR images. Please upload a text-based PDF, Word, PPTX, or Text file.",
+      });
+    }
+
+    let result;
+    if (importType === 'question_sheet') {
+      // Mode B: Parse existing pre-formatted exam sheet
+      result = await parseQuestionsFromPdfText({
+        pdfText,
+        course,
+        moduleDoc,
+        userId: req.user._id.toString(),
+      });
+    } else {
+      // Mode A (Default): Generate questions grounded in the PDF study matter
+      result = await generateQuestionsFromMatterPdf({
+        pdfText,
+        count: parseInt(count, 10) || 5,
+        difficulty,
+        topic,
+        course,
+        moduleDoc,
+        userId: req.user._id.toString(),
+      });
+    }
+
+    if (result.error) {
+      return res.status(400).json({
+        success: false,
+        message: result.error,
+      });
+    }
+
+    if (!result.questions || result.questions.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No questions could be generated from this PDF document. Please verify the PDF contains readable text.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        questions: result.questions,
+        hasAnswerKey: result.hasAnswerKey ?? true,
+        extractedCount: result.questions.length,
+        source: result.source,
+      },
+    });
+  } catch (error) {
+    console.error('[POST /api/assessments/questions/import-pdf] Error:', error);
+    if (req.file && req.file.path) {
+      try { fs.unlinkSync(req.file.path); } catch (e) {}
+    }
+    next(error);
+  }
+};
+
+/**
+ * @desc    Suggest Answers for Questions without Answer Keys using AI (Phase 7.7)
+ * @route   POST /api/assessments/questions/suggest-answers
+ * @access  Private (Trainer, Admin)
+ */
+const suggestAnswersForPdfQuestions = async (req, res, next) => {
+  try {
+    const { questions, courseId, moduleId } = req.body;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ success: false, message: 'Questions array is required.' });
+    }
+
+    if (!courseId) {
+      return res.status(400).json({ success: false, message: 'courseId is required.' });
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).json({ success: false, message: 'Course not found.' });
+    }
+
+    // Ownership check
+    if (req.user.role === 'trainer') {
+      const isOwner = course.trainer.toString() === req.user._id.toString() || course.trainer.toString() === req.user.id;
+      if (!isOwner) {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied.',
+        });
+      }
+    }
+
+    let moduleDoc = null;
+    if (moduleId) moduleDoc = await Module.findById(moduleId);
+
+    const result = await suggestAnswersForQuestions({
+      questions,
+      course,
+      moduleDoc,
+      userId: req.user._id.toString(),
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error('[POST /api/assessments/questions/suggest-answers] Error:', error);
+    next(error);
+  }
+};
+
 module.exports = {
   getModuleQuiz,
   saveModuleQuiz,
@@ -1418,4 +1747,9 @@ module.exports = {
   getAssessmentById,
   getAssessmentAttemptReview,
   explainAssessmentQuestion,
+  generateAiQuestions,
+  regenerateSingleAiQuestion,
+  importQuestionsFromPdf,
+  suggestAnswersForPdfQuestions,
 };
+

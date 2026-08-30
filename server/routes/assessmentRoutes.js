@@ -16,8 +16,40 @@ const {
   getAssessmentById,
   getAssessmentAttemptReview,
   explainAssessmentQuestion,
+  generateAiQuestions,
+  regenerateSingleAiQuestion,
+  importQuestionsFromPdf,
+  suggestAnswersForPdfQuestions,
 } = require('../controllers/assessmentController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
+const assessmentPdfUpload = require('../middleware/assessmentPdfUpload');
+
+// Phase 7.7: AI Question Generation & PDF Question Import Routes
+router.post(
+  '/assessments/ai/generate-questions',
+  protect,
+  authorizeRoles('trainer', 'admin'),
+  generateAiQuestions
+);
+router.post(
+  '/assessments/ai/regenerate-question',
+  protect,
+  authorizeRoles('trainer', 'admin'),
+  regenerateSingleAiQuestion
+);
+router.post(
+  '/assessments/questions/import-pdf',
+  protect,
+  authorizeRoles('trainer', 'admin'),
+  assessmentPdfUpload.single('file'),
+  importQuestionsFromPdf
+);
+router.post(
+  '/assessments/questions/suggest-answers',
+  protect,
+  authorizeRoles('trainer', 'admin'),
+  suggestAnswersForPdfQuestions
+);
 
 // Assessment Attempt Review Route (With Explanations)
 router.get('/assessments/attempts/:attemptId/review', protect, getAssessmentAttemptReview);

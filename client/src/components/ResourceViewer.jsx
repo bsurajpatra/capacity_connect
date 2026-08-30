@@ -18,9 +18,19 @@ const ResourceViewer = ({ resource, onClose }) => {
   const [textContent, setTextContent] = useState('');
   const [loadingText, setLoadingText] = useState(false);
 
-  const fileUrl = resource.filePath
-    ? `http://localhost:5002/uploads/resources/${resource.filePath.split(/[\\/]/).pop()}`
-    : '';
+  const BACKEND_URL = import.meta.env.VITE_API_URL
+    ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+    : 'http://localhost:5002';
+
+  const getFileUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    const cleanPath = path.replace(/\\/g, '/');
+    const filename = cleanPath.split('/').pop();
+    return `${BACKEND_URL}/uploads/resources/${filename}`;
+  };
+
+  const fileUrl = getFileUrl(resource.filePath);
 
   const isLink = resource.type === 'link';
   const isVideo = resource.type === 'video';

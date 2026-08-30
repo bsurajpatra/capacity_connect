@@ -171,24 +171,30 @@ const AdminCoursesPage = () => {
       case 'spreadsheet':
         return <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
       default:
-        return <FileText className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />;
+        return <FileText className="w-3.5 h-3.5 text-[var(--text-muted)]" />;
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm transition-colors">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 mb-2">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>Curriculum Moderation & Publishing Governance</span>
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* ====================================================
+          1. HEADER HERO BANNER
+          ==================================================== */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 sm:p-7 shadow-xs relative overflow-hidden transition-colors">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+        <div className="space-y-1 relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[var(--surface-muted)] text-[var(--primary)] border border-[var(--border)]">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Curriculum Moderation & Publishing Governance</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
+            Platform Course Administration
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl">
+            Audit structured modules, inspect attached digital assets, moderate publication statuses, and oversee platform-wide learning offerings.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Platform Course Administration
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-          Audit structured modules, inspect attached digital assets, moderate publication statuses, and oversee platform-wide learning offerings.
-        </p>
       </div>
 
       {/* Notifications */}
@@ -210,95 +216,97 @@ const AdminCoursesPage = () => {
 
       {error && <ErrorMessage message={error} onRetry={() => setError(null)} />}
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-colors">
+      {/* ====================================================
+          2. FILTER TOOLBAR
+          ==================================================== */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[var(--surface)] p-3.5 border border-[var(--border)] rounded-xl shadow-xs transition-colors">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search platform courses or instructors..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-9 pr-3.5 py-2 text-xs border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          <div className="flex items-center gap-1">
-            {[
-              { label: 'All Courses', value: '' },
-              { label: 'Published', value: 'published' },
-              { label: 'Drafts', value: 'draft' },
-            ].map((f) => (
-              <button
-                key={f.value}
-                type="button"
-                onClick={() => setStatusFilter(f.value)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
-                  statusFilter === f.value
-                    ? 'bg-slate-900 dark:bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center gap-1 w-full sm:w-auto overflow-x-auto">
+          {[
+            { label: 'All Courses', value: '' },
+            { label: 'Published', value: 'published' },
+            { label: 'Drafts', value: 'draft' },
+          ].map((f) => (
+            <button
+              key={f.value}
+              type="button"
+              onClick={() => setStatusFilter(f.value)}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
+                statusFilter === f.value
+                  ? 'bg-[var(--primary)] text-white shadow-xs'
+                  : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Courses Table */}
+      {/* ====================================================
+          3. COURSES TABLE
+          ==================================================== */}
       {loading ? (
-        <div className="py-20 flex justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="py-20 flex justify-center bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs">
           <Loading message="Loading platform course offerings..." />
         </div>
       ) : filteredCourses.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm space-y-2">
-          <BookOpen className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-          <p className="font-semibold text-slate-700 dark:text-slate-200">No courses found matching your criteria.</p>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-12 text-center text-xs text-[var(--text-muted)] shadow-xs space-y-2">
+          <BookOpen className="w-8 h-8 text-[var(--text-muted)] mx-auto opacity-50" />
+          <p className="font-bold text-sm text-[var(--text-primary)]">No courses found matching your criteria.</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs overflow-hidden transition-colors">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4">Course Title</th>
-                  <th className="py-3 px-4">Category & Level</th>
-                  <th className="py-3 px-4">Instructor</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4">Enrolled</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="bg-[var(--surface-muted)] border-b border-[var(--border)] text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[10px]">
+                  <th className="py-3.5 px-4">Course Title</th>
+                  <th className="py-3.5 px-4">Category & Level</th>
+                  <th className="py-3.5 px-4">Instructor</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4">Enrolled</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+              <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
                 {filteredCourses.map((course) => {
                   const isActionLoading = actionLoadingId === course._id;
                   const isDraft = course.status === 'draft';
 
                   return (
-                    <tr key={course._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="py-3 px-4 font-bold text-slate-900 dark:text-white max-w-xs">
+                    <tr key={course._id} className="hover:bg-[var(--surface-muted)]/60 transition-colors">
+                      <td className="py-3 px-4 font-bold text-[var(--text-primary)] max-w-xs">
                         <div className="flex items-center gap-2">
-                          <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <BookOpen className="w-4 h-4 text-[var(--primary)] shrink-0" />
                           <span className="truncate">{course.title}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 mr-1.5">
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-[var(--surface-muted)] text-[var(--text-secondary)] border border-[var(--border)] mr-1.5">
                           {course.category}
                         </span>
-                        <span className="text-slate-500 dark:text-slate-400 capitalize">{course.level}</span>
+                        <span className="text-[var(--text-muted)] capitalize">{course.level}</span>
                       </td>
-                      <td className="py-3 px-4 font-medium text-slate-800 dark:text-slate-200">
+                      <td className="py-3 px-4 font-medium text-[var(--text-primary)]">
                         {course.trainer?.name || '—'}
                       </td>
                       <td className="py-3 px-4">
                         <span
-                          className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded border ${
+                          className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-md border ${
                             isDraft
-                              ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                              : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                              ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                              : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                           }`}
                         >
                           {isDraft ? (
@@ -314,9 +322,9 @@ const AdminCoursesPage = () => {
                           )}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">
+                      <td className="py-3 px-4 font-semibold text-[var(--text-primary)]">
                         <div className="flex items-center gap-1">
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
+                          <Users className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                           <span>{course.enrolledCount || 0}</span>
                         </div>
                       </td>
@@ -324,7 +332,7 @@ const AdminCoursesPage = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenInspector(course._id)}
-                          className="px-2.5 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1"
+                          className="px-2.5 py-1 bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary-border,#BFDBFE)] hover:bg-[var(--primary-soft)]/80 rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1"
                           title="Inspect Curriculum & Content"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -337,8 +345,8 @@ const AdminCoursesPage = () => {
                           disabled={isActionLoading}
                           className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors inline-flex items-center gap-1 ${
                             isDraft
-                              ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
-                              : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                              ? 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
+                              : 'border-[var(--border)] bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
                           }`}
                         >
                           <span>{isDraft ? 'Publish' : 'Unpublish'}</span>
@@ -348,7 +356,7 @@ const AdminCoursesPage = () => {
                           type="button"
                           onClick={() => handleDeleteCourse(course)}
                           disabled={isActionLoading}
-                          className="p-1.5 text-slate-400 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
+                          className="p-1.5 text-[var(--text-muted)] hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
                           title="Delete Course"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -364,23 +372,23 @@ const AdminCoursesPage = () => {
       )}
 
       {/* ====================================================
-          COURSE STRUCTURE & CURRICULUM INSPECTOR MODAL
+          4. COURSE STRUCTURE & CURRICULUM INSPECTOR MODAL
           ==================================================== */}
       {inspectCourseId && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col border border-[var(--border)] overflow-hidden transition-colors">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-muted)]">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <ShieldCheck className="w-5 h-5 text-[var(--primary)]" />
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
                   Course Structure & Curriculum Inspector
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setInspectCourseId(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-lg hover:bg-[var(--border)] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -397,48 +405,48 @@ const AdminCoursesPage = () => {
               ) : (
                 <>
                   {/* Course Metadata Card */}
-                  <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl p-5 space-y-3">
+                  <div className="bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl p-5 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-[var(--surface)] border border-[var(--border)] text-[var(--text-secondary)]">
                             {inspectCourseData.course.category}
                           </span>
                           <span
-                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                               inspectCourseData.course.status === 'draft'
-                                ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800'
-                                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                                ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
                             }`}
                           >
                             {inspectCourseData.course.status}
                           </span>
                         </div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                        <h2 className="text-xl font-bold text-[var(--text-primary)]">
                           {inspectCourseData.course.title}
                         </h2>
                       </div>
 
-                      <div className="text-xs text-slate-500 dark:text-slate-400">
-                        <span>Level: <strong className="capitalize text-slate-700 dark:text-slate-200">{inspectCourseData.course.level}</strong></span> &bull;{' '}
-                        <span>Enrolled: <strong className="text-slate-700 dark:text-slate-200">{inspectCourseData.course.enrolledCount || 0}</strong></span>
+                      <div className="text-xs text-[var(--text-muted)]">
+                        <span>Level: <strong className="capitalize text-[var(--text-primary)]">{inspectCourseData.course.level}</strong></span> &bull;{' '}
+                        <span>Enrolled: <strong className="text-[var(--text-primary)]">{inspectCourseData.course.enrolledCount || 0}</strong></span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-200/60 dark:border-slate-700/60 pt-2">
+                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed border-t border-[var(--border)] pt-2">
                       {inspectCourseData.course.description}
                     </p>
 
                     {inspectCourseData.course.prerequisites && (
-                      <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5">
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 block text-[10px] uppercase">Prerequisites:</span>
+                      <div className="text-xs text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg p-2.5">
+                        <span className="font-semibold text-[var(--text-primary)] block text-[10px] uppercase">Prerequisites:</span>
                         {inspectCourseData.course.prerequisites}
                       </div>
                     )}
 
                     {/* Skills Covered */}
-                    <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                      <span className="font-semibold text-slate-700 dark:text-slate-300 block text-[10px] uppercase mb-1">
+                    <div className="pt-2 border-t border-[var(--border)]">
+                      <span className="font-semibold text-[var(--text-primary)] block text-[10px] uppercase mb-1">
                         Skills Covered ({inspectCourseData.course.skills?.length || 0}):
                       </span>
                       {inspectCourseData.course.skills && inspectCourseData.course.skills.length > 0 ? (
@@ -451,14 +459,14 @@ const AdminCoursesPage = () => {
                             return (
                               <span
                                 key={s._id || s.skill?._id || sName}
-                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium border ${
+                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
                                   sCat === 'Soft Skill'
-                                    ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                                    : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                                    ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                    : 'bg-[var(--primary-soft)] text-[var(--primary)] border-[var(--primary-border,#BFDBFE)]'
                                 }`}
                               >
                                 <span>{sName}</span>
-                                <span className="text-[9px] uppercase font-bold px-1 py-0.2 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+                                <span className="text-[9px] uppercase font-bold px-1 py-0.2 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text-primary)]">
                                   {sProf}
                                 </span>
                               </span>
@@ -466,28 +474,28 @@ const AdminCoursesPage = () => {
                           })}
                         </div>
                       ) : (
-                        <span className="text-slate-400 italic text-[11px]">No skills mapped</span>
+                        <span className="text-[var(--text-muted)] italic text-[11px]">No skills mapped</span>
                       )}
                     </div>
 
-                    <div className="text-xs text-slate-500 dark:text-slate-400 pt-1 flex items-center gap-2">
-                      <GraduationCap className="w-3.5 h-3.5 text-slate-400" />
+                    <div className="text-xs text-[var(--text-muted)] pt-1 flex items-center gap-2">
+                      <GraduationCap className="w-3.5 h-3.5 text-[var(--text-muted)]" />
                       <span>
-                        Trainer: <strong className="text-slate-800 dark:text-slate-200">{inspectCourseData.course.trainer?.name}</strong> ({inspectCourseData.course.trainer?.email})
+                        Trainer: <strong className="text-[var(--text-primary)]">{inspectCourseData.course.trainer?.name}</strong> ({inspectCourseData.course.trainer?.email})
                       </span>
                     </div>
                   </div>
 
                   {/* Modules & Resources Hierarchy */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    <div className="flex items-center justify-between border-b border-[var(--border)] pb-2">
+                      <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">
                         Modules & Attached Learning Content ({inspectCourseData.modules?.length || 0})
                       </h4>
                     </div>
 
                     {!inspectCourseData.modules || inspectCourseData.modules.length === 0 ? (
-                      <p className="text-xs text-slate-400 italic py-4">No modules found in this course.</p>
+                      <p className="text-xs text-[var(--text-muted)] italic py-4">No modules found in this course.</p>
                     ) : (
                       <div className="space-y-3">
                         {inspectCourseData.modules.map((mod, idx) => {
@@ -496,30 +504,30 @@ const AdminCoursesPage = () => {
                           return (
                             <div
                               key={mod._id}
-                              className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
+                              className="border border-[var(--border)] rounded-xl overflow-hidden"
                             >
                               {/* Module Bar */}
                               <div
                                 onClick={() => setExpandedModuleId(isExpanded ? null : mod._id)}
-                                className="px-4 py-3 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer flex items-center justify-between transition-colors"
+                                className="px-4 py-3 bg-[var(--surface)] hover:bg-[var(--surface-muted)] cursor-pointer flex items-center justify-between transition-colors"
                               >
                                 <div>
-                                  <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 block uppercase">
+                                  <span className="text-[10px] font-mono font-bold text-[var(--primary)] block uppercase">
                                     Module {idx + 1} (Order: {mod.order})
                                   </span>
-                                  <h5 className="text-sm font-bold text-slate-900 dark:text-white">{mod.title}</h5>
+                                  <h5 className="text-sm font-bold text-[var(--text-primary)]">{mod.title}</h5>
                                   {mod.description && (
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{mod.description}</p>
+                                    <p className="text-xs text-[var(--text-muted)] mt-0.5">{mod.description}</p>
                                   )}
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded">
+                                  <span className="text-xs font-semibold text-[var(--text-muted)] bg-[var(--surface-muted)] px-2 py-0.5 rounded-md">
                                     {mod.resources?.length || 0} Resources
                                   </span>
                                   <button
                                     type="button"
-                                    className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                                    className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                                   >
                                     {isExpanded ? (
                                       <ChevronUp className="w-4 h-4" />
@@ -532,26 +540,26 @@ const AdminCoursesPage = () => {
 
                               {/* Expanded Resources */}
                               {isExpanded && (
-                                <div className="p-4 bg-slate-50 dark:bg-slate-850 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                                <div className="p-4 bg-[var(--surface-muted)] border-t border-[var(--border)] space-y-2">
                                   {!mod.resources || mod.resources.length === 0 ? (
-                                    <p className="text-xs text-slate-400 italic">No resources attached to this module.</p>
+                                    <p className="text-xs text-[var(--text-muted)] italic">No resources attached to this module.</p>
                                   ) : (
                                     <div className="space-y-1.5">
                                       {mod.resources.map((res) => {
                                         return (
                                           <div
                                             key={res._id}
-                                            className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between text-xs"
+                                            className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg flex items-center justify-between text-xs"
                                           >
                                             <div className="flex items-center gap-2.5">
-                                              <div className="p-1.5 rounded bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+                                              <div className="p-1.5 rounded-md bg-[var(--surface-muted)] border border-[var(--border)]">
                                                 {getResourceIcon(res.type)}
                                               </div>
                                               <div>
-                                                <span className="font-semibold text-slate-900 dark:text-white block">
+                                                <span className="font-semibold text-[var(--text-primary)] block">
                                                   {res.title}
                                                 </span>
-                                                <span className="text-[10px] text-slate-400 capitalize">
+                                                <span className="text-[10px] text-[var(--text-muted)] capitalize">
                                                   Type: {res.type}
                                                 </span>
                                               </div>
@@ -561,7 +569,7 @@ const AdminCoursesPage = () => {
                                               <button
                                                 type="button"
                                                 onClick={() => setPreviewResource(res)}
-                                                className="px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 rounded border border-emerald-200 dark:border-emerald-800"
+                                                className="px-2.5 py-1 text-[11px] font-semibold text-[var(--primary)] bg-[var(--primary-soft)] hover:bg-[var(--primary-soft)]/80 rounded-md border border-[var(--primary-border,#BFDBFE)] transition-colors"
                                               >
                                                 Preview Resource
                                               </button>
@@ -582,7 +590,6 @@ const AdminCoursesPage = () => {
                 </>
               )}
             </div>
-            {/* Requirement 9: Clean modal experience without redundant footer "Close Inspector" button */}
           </div>
         </div>
       )}

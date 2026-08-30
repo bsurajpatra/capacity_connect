@@ -99,81 +99,96 @@ const AdminTrainersPage = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm transition-colors">
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-50 dark:bg-teal-950/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 mb-2">
-          <UserCheck className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-          <span>Faculty & Curriculum Governance</span>
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* ====================================================
+          1. HEADER HERO BANNER
+          ==================================================== */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 sm:p-7 shadow-xs relative overflow-hidden transition-colors">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-teal-500/5 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+        <div className="space-y-1 relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[var(--surface-muted)] text-teal-700 dark:text-teal-400 border border-[var(--border)]">
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Faculty & Curriculum Governance</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
+            Trainer & Faculty Management
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl">
+            Supervise platform instructors, inspect curriculum development portfolios, and monitor learner capacity across courses.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Trainer & Faculty Management
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
-          Supervise platform instructors, inspect curriculum development portfolios, and monitor learner capacity across courses.
-        </p>
       </div>
 
-      {/* Search & Filters */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm flex items-center justify-between gap-3 transition-colors">
-        <div className="relative w-full sm:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+      {/* ====================================================
+          2. SEARCH & FILTERS
+          ==================================================== */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-3.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 transition-colors">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search trainers by name, email, dept..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-9 pr-3.5 py-2 text-xs border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
           />
         </div>
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-          Total Trainers: <strong className="text-slate-900 dark:text-white">{filteredTrainers.length}</strong>
+        <span className="text-xs font-semibold text-[var(--text-muted)]">
+          Total Trainers: <strong className="text-[var(--text-primary)]">{filteredTrainers.length}</strong>
         </span>
       </div>
 
-      {/* Trainers Table */}
+      {/* ====================================================
+          3. TRAINERS TABLE
+          ==================================================== */}
       {loading ? (
-        <div className="py-20 flex justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="py-20 flex justify-center bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs">
           <Loading message="Loading platform trainers..." />
         </div>
       ) : error ? (
         <ErrorMessage message={error} onRetry={fetchTrainers} />
       ) : filteredTrainers.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm space-y-2">
-          <UserCheck className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-          <p className="font-semibold text-slate-700 dark:text-slate-200">No trainers found matching your search.</p>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-12 text-center text-xs text-[var(--text-muted)] shadow-xs space-y-2">
+          <UserCheck className="w-8 h-8 text-[var(--text-muted)] mx-auto opacity-50" />
+          <p className="font-bold text-sm text-[var(--text-primary)]">No trainers found matching your search.</p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-colors">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs overflow-hidden transition-colors">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 font-semibold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4">Trainer</th>
-                  <th className="py-3 px-4">Department</th>
-                  <th className="py-3 px-4">Courses Created</th>
-                  <th className="py-3 px-4">Total Learners</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="bg-[var(--surface-muted)] border-b border-[var(--border)] text-[var(--text-muted)] font-semibold uppercase tracking-wider text-[10px]">
+                  <th className="py-3.5 px-4">Trainer</th>
+                  <th className="py-3.5 px-4">Department</th>
+                  <th className="py-3.5 px-4">Courses Created</th>
+                  <th className="py-3.5 px-4">Total Learners</th>
+                  <th className="py-3.5 px-4">Status</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+              <tbody className="divide-y divide-[var(--border)] text-[var(--text-secondary)]">
                 {filteredTrainers.map((t) => (
-                  <tr key={t._id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
-                      <div>
-                        <span>{t.name}</span>
-                        <span className="text-[11px] text-slate-400 block font-normal">{t.email}</span>
+                  <tr key={t._id} className="hover:bg-[var(--surface-muted)]/60 transition-colors">
+                    <td className="py-3 px-4 font-bold text-[var(--text-primary)]">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-bold text-xs flex items-center justify-center shrink-0 border border-teal-200 dark:border-teal-800">
+                          {t.name?.charAt(0) || 'T'}
+                        </div>
+                        <div>
+                          <span className="block font-bold text-[var(--text-primary)]">{t.name}</span>
+                          <span className="text-[11px] text-[var(--text-muted)] block font-normal">{t.email}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-slate-600 dark:text-slate-400">{t.department || '—'}</td>
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                    <td className="py-3 px-4 text-[var(--text-secondary)]">{t.department || '—'}</td>
+                    <td className="py-3 px-4 font-semibold text-[var(--text-primary)]">
                       <div className="flex items-center gap-1.5">
                         <BookOpen className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                         <span>{t.coursesCount || 0}</span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-900 dark:text-white">
+                    <td className="py-3 px-4 font-semibold text-[var(--text-primary)]">
                       <div className="flex items-center gap-1.5">
                         <Users className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         <span>{t.learnersCount || 0}</span>
@@ -181,10 +196,10 @@ const AdminTrainersPage = () => {
                     </td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                           t.isActive
-                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                            : 'bg-red-50 dark:bg-red-950/50 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                            : 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
                         }`}
                       >
                         {t.isActive ? (
@@ -201,11 +216,10 @@ const AdminTrainersPage = () => {
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
-                      {/* Requirement 8: Clean Actions column with Details button only */}
                       <button
                         type="button"
                         onClick={() => handleOpenDetails(t._id)}
-                        className="px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors inline-flex items-center gap-1"
+                        className="px-2.5 py-1 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-soft)] hover:bg-[var(--primary-soft)]/80 border border-[var(--primary-border,#BFDBFE)] rounded-lg transition-colors inline-flex items-center gap-1"
                         title="Inspect Faculty Portfolio"
                       >
                         <Eye className="w-3.5 h-3.5" />
@@ -221,16 +235,16 @@ const AdminTrainersPage = () => {
       )}
 
       {/* ====================================================
-          TRAINER DETAILS MODAL WITH SAFE INLINE CONFIRMATION
+          4. TRAINER DETAILS MODAL WITH SAFE INLINE CONFIRMATION
           ==================================================== */}
       {(selectedTrainer || detailsLoading) && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="bg-[var(--surface)] rounded-xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border border-[var(--border)] overflow-hidden transition-colors">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+            <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-muted)]">
               <div className="flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
                   Trainer Portfolio & Course Audit
                 </h3>
               </div>
@@ -241,7 +255,7 @@ const AdminTrainersPage = () => {
                   setTrainerDetails(null);
                   setConfirmingDeactivate(false);
                 }}
-                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
+                className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -256,21 +270,21 @@ const AdminTrainersPage = () => {
               ) : selectedTrainer && trainerDetails ? (
                 <>
                   {/* Profile Card */}
-                  <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-between">
+                  <div className="p-4 bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl flex items-center justify-between flex-wrap gap-3">
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{selectedTrainer.name}</h4>
-                      <p className="text-slate-500 dark:text-slate-400 font-mono text-[11px]">{selectedTrainer.email}</p>
-                      <span className="text-slate-600 dark:text-slate-400 text-[10px] mt-1 block">
-                        Department: <strong>{selectedTrainer.department || 'General Faculty'}</strong>
+                      <h4 className="text-sm font-bold text-[var(--text-primary)]">{selectedTrainer.name}</h4>
+                      <p className="text-[var(--text-muted)] font-mono text-[11px]">{selectedTrainer.email}</p>
+                      <span className="text-[var(--text-muted)] text-[10px] mt-1 block">
+                        Department: <strong className="text-[var(--text-secondary)]">{selectedTrainer.department || 'General Faculty'}</strong>
                       </span>
                     </div>
 
                     <div>
                       <span
-                        className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border ${
+                        className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-1 rounded-md border ${
                           selectedTrainer.isActive
-                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                            : 'bg-red-50 dark:bg-red-950/50 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                            : 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
                         }`}
                       >
                         {selectedTrainer.isActive ? 'Active Status' : 'Deactivated'}
@@ -300,21 +314,21 @@ const AdminTrainersPage = () => {
 
                   {/* Created Courses */}
                   <div className="space-y-2">
-                    <h5 className="font-bold text-slate-900 dark:text-white uppercase text-[11px] tracking-wider">
+                    <h5 className="font-bold text-[var(--text-primary)] uppercase text-[11px] tracking-wider">
                       Assigned Curriculum Courses ({trainerDetails.courses?.length || 0})
                     </h5>
                     {!trainerDetails.courses || trainerDetails.courses.length === 0 ? (
-                      <p className="text-slate-400 italic">No courses created yet.</p>
+                      <p className="text-[var(--text-muted)] italic">No courses created yet.</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {trainerDetails.courses.map((c) => (
                           <div
                             key={c.courseId}
-                            className="p-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center justify-between"
+                            className="p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-lg flex items-center justify-between"
                           >
                             <div>
-                              <span className="font-bold text-slate-900 dark:text-white">{c.title}</span>
-                              <span className="text-[10px] text-slate-400 block">
+                              <span className="font-bold text-[var(--text-primary)]">{c.title}</span>
+                              <span className="text-[10px] text-[var(--text-muted)] block">
                                 {c.category} &bull; {c.level} &bull; {c.enrolledCount || 0} Learners
                               </span>
                             </div>
@@ -327,10 +341,10 @@ const AdminTrainersPage = () => {
                                 </span>
                               )}
                               <span
-                                className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                                className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded-md ${
                                   c.status === 'published'
-                                    ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
-                                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                    : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] border border-[var(--border)]'
                                 }`}
                               >
                                 {c.status}
@@ -346,7 +360,7 @@ const AdminTrainersPage = () => {
             </div>
 
             {/* Modal Footer with Safe Inline Confirmation */}
-            <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between transition-colors">
+            <div className="px-6 py-3 border-t border-[var(--border)] bg-[var(--surface-muted)] flex items-center justify-between transition-colors">
               <div>
                 {selectedTrainer && (
                   confirmingDeactivate ? (
@@ -359,14 +373,14 @@ const AdminTrainersPage = () => {
                         type="button"
                         onClick={() => handleExecuteStatusToggle(selectedTrainer)}
                         disabled={actionLoading}
-                        className="px-2.5 py-1 text-xs font-bold bg-rose-600 text-white rounded hover:bg-rose-700 transition-colors shadow-2xs"
+                        className="px-2.5 py-1 text-xs font-bold bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors shadow-2xs"
                       >
                         {actionLoading ? 'Updating...' : 'Yes, Confirm'}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmingDeactivate(false)}
-                        className="px-2 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 rounded"
+                        className="px-2 py-1 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded"
                       >
                         Cancel
                       </button>
@@ -395,7 +409,7 @@ const AdminTrainersPage = () => {
                   setTrainerDetails(null);
                   setConfirmingDeactivate(false);
                 }}
-                className="px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                className="px-4 py-2 text-xs font-bold text-[var(--text-secondary)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-muted)] transition-colors"
               >
                 Close
               </button>

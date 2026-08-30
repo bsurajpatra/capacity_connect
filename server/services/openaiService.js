@@ -2488,6 +2488,911 @@ const generateCourseSpecificAiInsights = async ({
   }
 };
 
+/**
+ * =========================================================================
+ * PHASE 7.7: AI ASSESSMENT QUESTION GENERATOR & PDF PARSER
+ * =========================================================================
+ */
+
+/**
+ * Deterministic Fallback MCQ Question Generator grounded in course/module content
+ */
+const generateFallbackAssessmentQuestionsFromContent = ({
+  course = {},
+  moduleDoc = null,
+  resources = [],
+  count = 5,
+  difficulty = 'medium',
+  topic = '',
+}) => {
+  const courseTitle = course.title || 'Course Subject';
+  const moduleTitle = moduleDoc ? moduleDoc.title : courseTitle;
+  const outcomes = Array.isArray(course.learningOutcomes) && course.learningOutcomes.length > 0
+    ? course.learningOutcomes
+    : [
+        `Understand core principles of ${courseTitle}`,
+        `Apply best practices in ${moduleTitle}`,
+        `Identify key components and architectures`,
+        `Solve practical problems using standard methodologies`,
+        `Analyze and evaluate implementation scenarios`,
+      ];
+
+  const skillNames = Array.isArray(course.skills)
+    ? course.skills.map((s) => s.skill?.name || s.name || '').filter(Boolean)
+    : [];
+
+  const targetDifficulty = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium';
+  const questions = [];
+
+  for (let i = 0; i < count; i++) {
+    const outcome = outcomes[i % outcomes.length] || `Topic in ${moduleTitle}`;
+    const skillName = skillNames[i % (skillNames.length || 1)] || moduleTitle;
+    const diff = difficulty === 'mixed' ? (['easy', 'medium', 'hard'][i % 3]) : targetDifficulty;
+
+    const templates = [
+      {
+        q: `What is the primary objective when applying "${outcome}" in ${moduleTitle}?`,
+        optA: `To establish structured patterns and maintain standard execution quality.`,
+        optB: `To bypass system validations and expedite deployment without testing.`,
+        optC: `To eliminate all external dependencies regardless of compatibility.`,
+        optD: `To restrict user access to low-level runtime configurations only.`,
+        ans: 'A',
+        exp: `Establishing structured patterns and maintaining execution quality is the foundational goal when working with ${outcome}.`,
+      },
+      {
+        q: `Which of the following represents a recommended best practice for ${skillName} within ${moduleTitle}?`,
+        optA: `Hardcoding sensitive operational values into public code repositories.`,
+        optB: `Adhering to modular separation of concerns and verifying functional outcomes.`,
+        optC: `Disabling logging and monitoring across critical production stages.`,
+        optD: `Ignoring baseline prerequisites prior to deploying new changes.`,
+        ans: 'B',
+        exp: `Modular separation of concerns and verifying functional outcomes ensures maintainable and resilient architectures in ${skillName}.`,
+      },
+      {
+        q: `In the context of "${moduleTitle}", what is the key advantage of structured concept evaluation?`,
+        optA: `It automatically guarantees zero computational overhead.`,
+        optB: `It replaces the need for any subsequent functional testing.`,
+        optC: `It provides verifiable feedback on trainee comprehension and identifies skill gaps.`,
+        optD: `It restricts execution to legacy operating environments only.`,
+        ans: 'C',
+        exp: `Structured evaluation provides objective diagnostic feedback on concept comprehension and highlights specific learning areas for review.`,
+      },
+      {
+        q: `When analyzing performance in ${skillName}, which factor is most critical according to course guidelines?`,
+        optA: `Consistency of methodology and adherence to documented standards.`,
+        optB: `Maximizing code length without considering readability.`,
+        optC: `Avoiding standard libraries in favor of completely untested custom routines.`,
+        optD: `Running unauthenticated services on unprotected default ports.`,
+        ans: 'A',
+        exp: `Adherence to standard methodologies and documented patterns ensures consistent, reliable results in ${skillName}.`,
+      },
+      {
+        q: `What is the expected outcome after completing the review of ${outcome}?`,
+        optA: `Complete mastery of foundational concepts and ability to solve practical tasks.`,
+        optB: `Immediate deprecation of all existing course study resources.`,
+        optC: `Limiting development strictly to non-networked local environments.`,
+        optD: `Preventing any future updates or modifications to the codebase.`,
+        ans: 'A',
+        exp: `Completing the outcome enables trainees to apply foundational principles to solve practical challenges effectively.`,
+      },
+    ];
+
+    const template = templates[i % templates.length];
+    questions.push({
+      questionText: template.q,
+      optionA: template.optA,
+      optionB: template.optB,
+      optionC: template.optC,
+      optionD: template.optD,
+      correctOption: template.ans,
+      marks: 1,
+      explanation: template.exp,
+      difficulty: diff,
+      topic: topic || skillName || moduleTitle,
+    });
+  }
+
+  return {
+    questions,
+    source: 'fallback',
+    contentSummary: `Generated ${questions.length} grounded questions based on ${moduleTitle} syllabus & outcomes.`,
+  };
+};
+
+/**
+ * AI Assessment Question Generator from Course & Module Content
+ */
+const generateAssessmentQuestionsFromContent = async ({
+  course = {},
+  moduleDoc = null,
+  resources = [],
+  count = 5,
+  difficulty = 'medium',
+  topic = '',
+  userId = 'default',
+}) => {
+  const safeCount = Math.max(1, Math.min(20, parseInt(count, 10) || 5));
+  const { apiKey, model, baseUrl, timeoutMs } = getOpenAiConfig();
+
+  if (!apiKey) {
+    return generateFallbackAssessmentQuestionsFromContent({
+      course,
+      moduleDoc,
+      resources,
+      count: safeCount,
+      difficulty,
+      topic,
+    });
+  }
+
+  // Build grounded educational context
+  const courseTitle = course.title || 'Course';
+  const moduleTitle = moduleDoc ? moduleDoc.title : 'All Modules';
+  const courseDesc = course.description || course.shortDescription || '';
+  const moduleDesc = moduleDoc ? (moduleDoc.description || '') : '';
+  const outcomes = Array.isArray(course.learningOutcomes) ? course.learningOutcomes.join('; ') : '';
+  const skills = Array.isArray(course.skills)
+    ? course.skills.map((s) => s.skill?.name || s.name || '').filter(Boolean).join(', ')
+    : '';
+  const resourceSummaries = (Array.isArray(resources) ? resources : [])
+    .map((r) => `${r.title || 'Resource'}: ${r.description || r.type || ''}`)
+    .slice(0, 8)
+    .join(' | ');
+
+  const educationalContext = `
+COURSE TITLE: ${courseTitle}
+CATEGORY & LEVEL: ${course.category || 'General'} (${course.level || 'Beginner'})
+COURSE SYLLABUS / DESCRIPTION: ${courseDesc}
+LEARNING OUTCOMES: ${outcomes || 'Core concepts and practical application.'}
+SKILLS TAUGHT: ${skills || 'General competency skills.'}
+TARGET MODULE: ${moduleTitle}
+MODULE DESCRIPTION: ${moduleDesc || 'Module specific topics and principles.'}
+ATTACHED RESOURCES: ${resourceSummaries || 'Standard curriculum materials.'}
+SPECIFIC TOPIC FOCUS: ${topic || 'Comprehensive coverage of the selected curriculum.'}
+`.trim();
+
+  const systemPrompt = `You are an expert assessment item writer and curriculum designer for Capacity Connect.
+Your task is to generate exactly ${safeCount} high-quality, professional Multiple Choice Questions (MCQs) STRICTLY GROUNDED in the provided educational content.
+
+CRITICAL RULES:
+1. Grounding: All questions, correct answers, and distractors MUST be directly relevant to the course/module content provided. DO NOT fabricate facts or test unrelated subjects.
+2. Structure: Every question MUST have exactly 4 plausible options (optionA, optionB, optionC, optionD) and exactly one designated correctOption ('A', 'B', 'C', or 'D').
+3. Quality: Write clear, unambiguous question prompts. Distractors must be realistic but demonstrably incorrect based on course concepts.
+4. Explanations: Provide a concise, educational explanation (2 sentences) explaining why the correct option is right.
+5. Difficulty: Produce questions adhering to the requested difficulty level ("${difficulty}": 'easy', 'medium', 'hard', or 'mixed').
+6. Return ONLY a valid JSON object matching the schema below:
+
+{
+  "questions": [
+    {
+      "questionText": "Clear question prompt ending with a question mark?",
+      "optionA": "First plausible option text",
+      "optionB": "Second plausible option text",
+      "optionC": "Third plausible option text",
+      "optionD": "Fourth plausible option text",
+      "correctOption": "A",
+      "explanation": "Concise educational explanation grounding why this option is correct.",
+      "difficulty": "medium",
+      "topic": "${topic || moduleTitle}"
+    }
+  ]
+}`;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.max(timeoutMs, 15000));
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Please generate ${safeCount} assessment questions based on this educational content:\n\n${educationalContext}` },
+        ],
+        temperature: 0.4,
+        response_format: { type: 'json_object' },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`OpenAI Questions Gen returned ${response.status}: ${errText}`);
+      return generateFallbackAssessmentQuestionsFromContent({
+        course,
+        moduleDoc,
+        resources,
+        count: safeCount,
+        difficulty,
+        topic,
+      });
+    }
+
+    const data = await response.json();
+    const rawContent = data.choices?.[0]?.message?.content;
+    const parsed = JSON.parse(rawContent || '{}');
+
+    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+      return generateFallbackAssessmentQuestionsFromContent({
+        course,
+        moduleDoc,
+        resources,
+        count: safeCount,
+        difficulty,
+        topic,
+      });
+    }
+
+    // Deterministic validation & sanitization
+    const validQuestions = [];
+    for (let i = 0; i < parsed.questions.length; i++) {
+      const q = parsed.questions[i];
+      if (!q.questionText || typeof q.questionText !== 'string' || !q.questionText.trim()) continue;
+
+      const optA = (q.optionA || '').trim();
+      const optB = (q.optionB || '').trim();
+      const optC = (q.optionC || '').trim();
+      const optD = (q.optionD || '').trim();
+
+      if (!optA || !optB || !optC || !optD) continue;
+      // Ensure unique options
+      const optSet = new Set([optA, optB, optC, optD]);
+      if (optSet.size < 4) continue;
+
+      const correctOpt = String(q.correctOption || 'A').toUpperCase().trim();
+      const validCorrect = ['A', 'B', 'C', 'D'].includes(correctOpt) ? correctOpt : 'A';
+      const qDiff = ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : (difficulty === 'mixed' ? (['easy', 'medium', 'hard'][i % 3]) : 'medium');
+
+      validQuestions.push({
+        questionText: q.questionText.trim(),
+        optionA: optA,
+        optionB: optB,
+        optionC: optC,
+        optionD: optD,
+        correctOption: validCorrect,
+        marks: 1,
+        explanation: (q.explanation || `Option ${validCorrect} is the correct response for this concept.`).trim(),
+        difficulty: qDiff,
+        topic: (q.topic || topic || moduleTitle).trim(),
+      });
+
+      if (validQuestions.length >= safeCount) break;
+    }
+
+    if (validQuestions.length === 0) {
+      return generateFallbackAssessmentQuestionsFromContent({
+        course,
+        moduleDoc,
+        resources,
+        count: safeCount,
+        difficulty,
+        topic,
+      });
+    }
+
+    // If fewer than requested, fill remaining with fallback
+    if (validQuestions.length < safeCount) {
+      const fallbackSet = generateFallbackAssessmentQuestionsFromContent({
+        course,
+        moduleDoc,
+        resources,
+        count: safeCount - validQuestions.length,
+        difficulty,
+        topic,
+      });
+      validQuestions.push(...fallbackSet.questions);
+    }
+
+    return {
+      questions: validQuestions,
+      source: 'ai',
+      contentSummary: `Generated ${validQuestions.length} AI questions grounded in ${moduleTitle} content.`,
+    };
+  } catch (err) {
+    console.warn(`AI Question Generation error (${err.message}). Using fallback.`);
+    return generateFallbackAssessmentQuestionsFromContent({
+      course,
+      moduleDoc,
+      resources,
+      count: safeCount,
+      difficulty,
+      topic,
+    });
+  }
+};
+
+/**
+ * Regenerate a Single MCQ Question from Course/Module Content
+ */
+const regenerateSingleQuestionFromContent = async ({
+  course = {},
+  moduleDoc = null,
+  resources = [],
+  existingQuestionText = '',
+  difficulty = 'medium',
+  topic = '',
+  userId = 'default',
+}) => {
+  const result = await generateAssessmentQuestionsFromContent({
+    course,
+    moduleDoc,
+    resources,
+    count: 2,
+    difficulty,
+    topic,
+    userId,
+  });
+
+  // Pick a question distinct from existing
+  const freshQuestion = result.questions.find((q) => q.questionText !== existingQuestionText) || result.questions[0];
+  return {
+    question: freshQuestion,
+    source: result.source,
+  };
+};
+
+/**
+ * Deterministic Regex Parser for Text-based Question PDFs
+ */
+const fallbackParseQuestionsFromPdfText = (pdfText) => {
+  if (!pdfText || typeof pdfText !== 'string') {
+    return { questions: [], hasAnswerKey: false };
+  }
+
+  const lines = pdfText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const questions = [];
+  let currentQ = null;
+  let detectedAnswerKeys = 0;
+
+  const isQuestionStart = (line) => /^(?:Q(?:uestion)?\s*)?\d+[\.\)\:]\s+/i.test(line);
+  const isOptionA = (line) => /^[Aa1][\.\)\:\-]\s+/i.test(line);
+  const isOptionB = (line) => /^[Bb2][\.\)\:\-]\s+/i.test(line);
+  const isOptionC = (line) => /^[Cc3][\.\)\:\-]\s+/i.test(line);
+  const isOptionD = (line) => /^[Dd4][\.\)\:\-]\s+/i.test(line);
+  const isAnswerLine = (line) => /^(?:Answer|Ans|Correct(?:\s*Answer)?|Key)[\:\s\-]+/i.test(line);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (isQuestionStart(line)) {
+      if (currentQ && currentQ.questionText && currentQ.optionA && currentQ.optionB) {
+        questions.push(finalizeQuestion(currentQ));
+      }
+      currentQ = {
+        questionText: line.replace(/^(?:Q(?:uestion)?\s*)?\d+[\.\)\:]\s*/i, '').trim(),
+        optionA: '',
+        optionB: '',
+        optionC: '',
+        optionD: '',
+        correctOption: 'A',
+        hasAnswerKey: false,
+      };
+    } else if (currentQ) {
+      if (isOptionA(line)) {
+        currentQ.optionA = line.replace(/^[Aa1][\.\)\:\-]\s*/i, '').trim();
+      } else if (isOptionB(line)) {
+        currentQ.optionB = line.replace(/^[Bb2][\.\)\:\-]\s*/i, '').trim();
+      } else if (isOptionC(line)) {
+        currentQ.optionC = line.replace(/^[Cc3][\.\)\:\-]\s*/i, '').trim();
+      } else if (isOptionD(line)) {
+        currentQ.optionD = line.replace(/^[Dd4][\.\)\:\-]\s*/i, '').trim();
+      } else if (isAnswerLine(line)) {
+        const match = line.match(/(?:Answer|Ans|Correct(?:\s*Answer)?|Key)[\:\s\-]+([A-Da-d1-4])/i);
+        if (match && match[1]) {
+          const raw = match[1].toUpperCase();
+          const mapped = { '1': 'A', '2': 'B', '3': 'C', '4': 'D' }[raw] || raw;
+          if (['A', 'B', 'C', 'D'].includes(mapped)) {
+            currentQ.correctOption = mapped;
+            currentQ.hasAnswerKey = true;
+            detectedAnswerKeys++;
+          }
+        }
+      } else if (!currentQ.optionA) {
+        // Multi-line question prompt
+        currentQ.questionText += ' ' + line;
+      }
+    }
+  }
+
+  if (currentQ && currentQ.questionText && currentQ.optionA && currentQ.optionB) {
+    questions.push(finalizeQuestion(currentQ));
+  }
+
+  function finalizeQuestion(q) {
+    return {
+      questionText: q.questionText.slice(0, 300),
+      optionA: (q.optionA || 'Option A').slice(0, 200),
+      optionB: (q.optionB || 'Option B').slice(0, 200),
+      optionC: (q.optionC || 'Option C').slice(0, 200),
+      optionD: (q.optionD || 'Option D').slice(0, 200),
+      correctOption: q.correctOption || 'A',
+      marks: 1,
+      explanation: q.hasAnswerKey ? `Extracted answer key from PDF: Option ${q.correctOption}` : '',
+      difficulty: 'medium',
+      topic: 'PDF Imported Question',
+      hasAnswerKey: q.hasAnswerKey,
+      isAiSuggestedAnswer: !q.hasAnswerKey,
+    };
+  }
+
+  return {
+    questions,
+    hasAnswerKey: detectedAnswerKeys > 0,
+    source: 'fallback_pdf_parser',
+  };
+};
+
+/**
+ * AI Structured Parsing of Extracted PDF Text into MCQs
+ */
+const parseQuestionsFromPdfText = async ({
+  pdfText = '',
+  course = {},
+  moduleDoc = null,
+  userId = 'default',
+}) => {
+  if (!pdfText || pdfText.trim().length < 20) {
+    return {
+      questions: [],
+      hasAnswerKey: false,
+      error: "We couldn't extract readable text from this PDF. This PDF may contain scanned images. Please upload a text-based PDF or use manual entry.",
+    };
+  }
+
+  const { apiKey, model, baseUrl, timeoutMs } = getOpenAiConfig();
+
+  if (!apiKey) {
+    const fallbackResult = fallbackParseQuestionsFromPdfText(pdfText);
+    return fallbackResult;
+  }
+
+  const truncatedText = pdfText.slice(0, 12000); // Guard token length
+
+  const systemPrompt = `You are a precision PDF examination question parser.
+Your task is to parse raw extracted text from a PDF examination paper or quiz worksheet and extract all Multiple Choice Questions (MCQs) into clean, structured JSON.
+
+RULES:
+1. Identify all question prompts, their 4 options (A, B, C, D), and their correct answer if provided anywhere in the text (e.g. "Answer: B", "Ans: (3)", "Key: C").
+2. If an option is missing or only 2-3 options exist, supply plausible standard distractors so every question has exactly 4 options.
+3. If an answer key exists in the text, set "hasAnswerKey": true on the root object, and specify "correctOption": 'A'|'B'|'C'|'D'.
+4. If NO answer key exists in the text, set "hasAnswerKey": false, and provide your best intelligent guess for "correctOption" while flagging "isAiSuggestedAnswer": true on the question.
+5. Return ONLY a valid JSON object matching this schema:
+
+{
+  "hasAnswerKey": true,
+  "questions": [
+    {
+      "questionText": "Extracted question prompt?",
+      "optionA": "Text for Option A",
+      "optionB": "Text for Option B",
+      "optionC": "Text for Option C",
+      "optionD": "Text for Option D",
+      "correctOption": "A",
+      "explanation": "Brief explanation or extracted answer note",
+      "difficulty": "medium",
+      "topic": "General",
+      "isAiSuggestedAnswer": false
+    }
+  ]
+}`;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.max(timeoutMs, 15000));
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `Please parse these extracted PDF examination questions:\n\n${truncatedText}` },
+        ],
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      console.warn(`OpenAI PDF parse returned status ${response.status}. Using regex fallback.`);
+      return fallbackParseQuestionsFromPdfText(pdfText);
+    }
+
+    const data = await response.json();
+    const rawContent = data.choices?.[0]?.message?.content;
+    const parsed = JSON.parse(rawContent || '{}');
+
+    if (!Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+      return fallbackParseQuestionsFromPdfText(pdfText);
+    }
+
+    const sanitizedQuestions = parsed.questions.map((q) => {
+      const correctOpt = String(q.correctOption || 'A').toUpperCase().trim();
+      return {
+        questionText: (q.questionText || 'Imported Question').trim(),
+        optionA: (q.optionA || 'Option A').trim(),
+        optionB: (q.optionB || 'Option B').trim(),
+        optionC: (q.optionC || 'Option C').trim(),
+        optionD: (q.optionD || 'Option D').trim(),
+        correctOption: ['A', 'B', 'C', 'D'].includes(correctOpt) ? correctOpt : 'A',
+        marks: 1,
+        explanation: q.explanation || '',
+        difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty) ? q.difficulty : 'medium',
+        topic: q.topic || 'PDF Import',
+        isAiSuggestedAnswer: Boolean(q.isAiSuggestedAnswer || !parsed.hasAnswerKey),
+      };
+    });
+
+    return {
+      questions: sanitizedQuestions,
+      hasAnswerKey: Boolean(parsed.hasAnswerKey),
+      source: 'ai_pdf_parser',
+    };
+  } catch (err) {
+    console.warn(`AI PDF parsing error (${err.message}). Using fallback parser.`);
+    return fallbackParseQuestionsFromPdfText(pdfText);
+  }
+};
+
+/**
+ * Suggest Answers using AI for Questions imported without an answer key
+ */
+const suggestAnswersForQuestions = async ({
+  questions = [],
+  course = {},
+  moduleDoc = null,
+  userId = 'default',
+}) => {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return { questions: [] };
+  }
+
+  const { apiKey, model, baseUrl, timeoutMs } = getOpenAiConfig();
+
+  if (!apiKey) {
+    // Fallback: assign Option A and note suggestion
+    return {
+      questions: questions.map((q) => ({
+        ...q,
+        correctOption: q.correctOption || 'A',
+        explanation: q.explanation || 'Suggested default answer. Trainer review required.',
+        isAiSuggestedAnswer: true,
+      })),
+      source: 'fallback',
+    };
+  }
+
+  const systemPrompt = `You are an academic examination validator.
+Given a list of multiple choice questions without answers, evaluate each question and select the single most accurate correctOption ('A', 'B', 'C', or 'D') along with a 1-2 sentence explanation.
+
+Return ONLY a valid JSON object:
+{
+  "answers": [
+    {
+      "index": 0,
+      "correctOption": "B",
+      "explanation": "Clear explanation grounded in standard concepts."
+    }
+  ]
+}`;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), Math.max(timeoutMs, 15000));
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: JSON.stringify({ questions }) },
+        ],
+        temperature: 0.2,
+        response_format: { type: 'json_object' },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      throw new Error(`OpenAI suggest answers returned status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const parsed = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+    const answersMap = new Map();
+
+    if (Array.isArray(parsed.answers)) {
+      parsed.answers.forEach((ans) => {
+        answersMap.set(ans.index, ans);
+      });
+    }
+
+    const updatedQuestions = questions.map((q, idx) => {
+      const suggestion = answersMap.get(idx);
+      const suggestedOption = suggestion && ['A', 'B', 'C', 'D'].includes(suggestion.correctOption)
+        ? suggestion.correctOption
+        : q.correctOption || 'A';
+
+      return {
+        ...q,
+        correctOption: suggestedOption,
+        explanation: suggestion?.explanation || q.explanation || 'AI Suggested Answer — Trainer Review Required.',
+        isAiSuggestedAnswer: true,
+      };
+    });
+
+    return {
+      questions: updatedQuestions,
+      source: 'ai',
+    };
+  } catch (err) {
+    console.warn(`Error suggesting answers with AI (${err.message}). Using fallback.`);
+    return {
+      questions: questions.map((q) => ({
+        ...q,
+        correctOption: q.correctOption || 'A',
+        explanation: q.explanation || 'AI Suggested Answer — Trainer Review Required.',
+        isAiSuggestedAnswer: true,
+      })),
+      source: 'fallback',
+    };
+  }
+};
+
+/**
+ * Generate MCQs by analyzing educational Matter/Content extracted from a PDF
+ */
+const generateQuestionsFromMatterPdf = async ({
+  pdfText = '',
+  count = 5,
+  difficulty = 'medium',
+  topic = '',
+  course = {},
+  moduleDoc = null,
+  userId = 'default',
+}) => {
+  if (!pdfText || pdfText.trim().length < 20) {
+    return {
+      questions: [],
+      error: "We couldn't extract readable text from this PDF. This PDF may contain scanned images. Please upload a text-based PDF or use manual entry.",
+    };
+  }
+
+  const safeCount = Math.max(1, Math.min(20, parseInt(count, 10) || 5));
+  const { apiKey, model, baseUrl, timeoutMs } = getOpenAiConfig();
+
+  // If no API key configured, use deterministic fallback generator
+  if (!apiKey) {
+    return generateFallbackQuestionsFromMatterPdf({
+      pdfText,
+      count: safeCount,
+      difficulty,
+      topic,
+      course,
+      moduleDoc,
+    });
+  }
+
+  const truncatedText = pdfText.slice(0, 14000);
+
+  const systemPrompt = `You are an expert instructional designer and senior assessment author.
+Your task is to analyze the educational study material/matter extracted from a PDF document and generate exactly ${safeCount} high-quality Multiple Choice Questions (MCQs).
+Rules:
+1. Every question must be strictly grounded in the concepts, facts, definitions, rules, workflows, and insights described in the PDF text.
+2. Provide 4 distinct options (Option A, Option B, Option C, Option D) for each question.
+3. Designate exactly one correct option: 'A', 'B', 'C', or 'D'.
+4. Include a concise educational explanation clarifying why the answer is correct based on the PDF material.
+5. Respect the difficulty level (${difficulty}).
+6. Format your response strictly as a JSON object with this shape:
+{
+  "questions": [
+    {
+      "questionText": "Question prompt based on PDF content?",
+      "optionA": "First option",
+      "optionB": "Second option",
+      "optionC": "Third option",
+      "optionD": "Fourth option",
+      "correctOption": "A",
+      "marks": 1,
+      "explanation": "Explanation grounded in the text",
+      "difficulty": "medium",
+      "topic": "Topic from PDF"
+    }
+  ]
+}`;
+
+  const userPrompt = `Course Context: ${course?.title || 'General Curriculum'}
+${moduleDoc ? `Module Context: ${moduleDoc.title}` : ''}
+${topic ? `Topic Focus: ${topic}` : ''}
+Target Count: ${safeCount} questions
+Target Difficulty: ${difficulty}
+
+--- EXTRACTED PDF STUDY MATERIAL / MATTER ---
+${truncatedText}
+--- END PDF MATTER ---
+
+Generate ${safeCount} strictly grounded MCQs as JSON.`;
+
+  try {
+    const payload = {
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.3,
+      response_format: { type: 'json_object' },
+    };
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`OpenAI Matter PDF Questions returned ${response.status}:`, errText);
+      return generateFallbackQuestionsFromMatterPdf({
+        pdfText,
+        count: safeCount,
+        difficulty,
+        topic,
+        course,
+        moduleDoc,
+      });
+    }
+
+    const resJson = await response.json();
+    const rawContent = resJson.choices?.[0]?.message?.content;
+    const parsed = JSON.parse(rawContent);
+
+    if (!parsed || !Array.isArray(parsed.questions) || parsed.questions.length === 0) {
+      return generateFallbackQuestionsFromMatterPdf({
+        pdfText,
+        count: safeCount,
+        difficulty,
+        topic,
+        course,
+        moduleDoc,
+      });
+    }
+
+    const sanitized = parsed.questions.map((q, idx) => {
+      const correctOpt = ['A', 'B', 'C', 'D'].includes(q.correctOption?.toUpperCase())
+        ? q.correctOption.toUpperCase()
+        : 'A';
+
+      return {
+        questionText: (q.questionText || `Question ${idx + 1} from PDF material`).slice(0, 300),
+        optionA: (q.optionA || 'Option A').slice(0, 200),
+        optionB: (q.optionB || 'Option B').slice(0, 200),
+        optionC: (q.optionC || 'Option C').slice(0, 200),
+        optionD: (q.optionD || 'Option D').slice(0, 200),
+        correctOption: correctOpt,
+        marks: 1,
+        explanation: (q.explanation || 'Based on the uploaded PDF document material.').slice(0, 500),
+        difficulty: ['easy', 'medium', 'hard'].includes(q.difficulty?.toLowerCase())
+          ? q.difficulty.toLowerCase()
+          : (difficulty === 'mixed' ? (['easy', 'medium', 'hard'][idx % 3]) : difficulty),
+        topic: (q.topic || topic || course?.title || 'PDF Matter').slice(0, 80),
+        source: 'ai_matter_pdf',
+      };
+    });
+
+    return {
+      questions: sanitized.slice(0, safeCount),
+      hasAnswerKey: true,
+      source: 'openai_matter_pdf',
+    };
+  } catch (err) {
+    console.warn('OpenAI generateQuestionsFromMatterPdf exception:', err.message);
+    return generateFallbackQuestionsFromMatterPdf({
+      pdfText,
+      count: safeCount,
+      difficulty,
+      topic,
+      course,
+      moduleDoc,
+    });
+  }
+};
+
+/**
+ * Deterministic Fallback Generator from PDF Matter
+ */
+const generateFallbackQuestionsFromMatterPdf = ({
+  pdfText = '',
+  count = 5,
+  difficulty = 'medium',
+  topic = '',
+  course = {},
+  moduleDoc = null,
+}) => {
+  const safeCount = Math.max(1, Math.min(20, parseInt(count, 10) || 5));
+  const lines = pdfText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => {
+      if (l.length < 15) return false;
+      if (l.startsWith('http') || l.includes('@') || l.includes('[Content_Types]') || l.includes('.xml')) return false;
+      // Filter out non-alphanumeric noise
+      const validAlphaCount = (l.match(/[a-zA-Z0-9\s]/g) || []).length;
+      return validAlphaCount / l.length >= 0.7;
+    });
+
+  const questions = [];
+  const diffCycle = ['easy', 'medium', 'hard'];
+
+  for (let i = 0; i < safeCount; i++) {
+    const activeDiff = difficulty === 'mixed' ? diffCycle[i % diffCycle.length] : difficulty;
+    const sampleLine = lines.length > 0
+      ? lines[i % lines.length]
+      : `Core instructional concept of ${course?.title || 'the curriculum'}`;
+    const cleanSnippet = sampleLine.replace(/^[0-9\.\-\*\#\s]+/, '').slice(0, 100);
+
+    const questionTemplates = [
+      `According to the study material, what is the primary significance of "${cleanSnippet}"?`,
+      `Which of the following best describes the key concept highlighted in the document: "${cleanSnippet}"?`,
+      `Based on the provided material, how does "${cleanSnippet}" function within the workflow?`,
+      `What is the recommended practice or outcome regarding "${cleanSnippet}" in the document?`,
+      `In the context of the curriculum, which statement accurately reflects "${cleanSnippet}"?`,
+    ];
+
+    const qText = questionTemplates[i % questionTemplates.length];
+
+    questions.push({
+      questionText: qText.slice(0, 300),
+      optionA: `It establishes the fundamental framework for ${cleanSnippet}.`,
+      optionB: `It serves as an auxiliary mechanism unrelated to the main workflow.`,
+      optionC: `It is deprecated in favor of legacy configurations.`,
+      optionD: `It restricts execution without providing validation checks.`,
+      correctOption: 'A',
+      marks: 1,
+      explanation: `Based on the uploaded document section: "${cleanSnippet}".`,
+      difficulty: activeDiff,
+      topic: topic || (moduleDoc?.title || course?.title || 'Document Study Matter').slice(0, 80),
+      source: 'fallback_matter_document',
+    });
+  }
+
+  return {
+    questions,
+    hasAnswerKey: true,
+    source: 'fallback_matter_document',
+  };
+};
+
 module.exports = {
   getOpenAiConfig,
   generateQuestionExplanation,
@@ -2510,5 +3415,14 @@ module.exports = {
   generateFallbackTrainerAiTeachingInsights,
   generateCourseSpecificAiInsights,
   generateFallbackCourseSpecificAiInsights,
+  generateAssessmentQuestionsFromContent,
+  generateFallbackAssessmentQuestionsFromContent,
+  generateQuestionsFromMatterPdf,
+  generateFallbackQuestionsFromMatterPdf,
+  regenerateSingleQuestionFromContent,
+  parseQuestionsFromPdfText,
+  fallbackParseQuestionsFromPdfText,
+  suggestAnswersForQuestions,
   checkRateLimit,
 };
+

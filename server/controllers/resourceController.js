@@ -100,7 +100,7 @@ const createResource = async (req, res, next) => {
       }
 
       fileName = req.file.originalname;
-      filePath = req.file.path;
+      filePath = `uploads/resources/${req.file.filename}`.replace(/\\/g, '/');
       fileSize = req.file.size;
       resourceType = type || detectResourceType(req.file.originalname);
     }
@@ -285,11 +285,16 @@ const deleteResource = async (req, res, next) => {
     }
 
     // Delete local file if present
-    if (resource.filePath && fs.existsSync(resource.filePath)) {
-      try {
-        fs.unlinkSync(resource.filePath);
-      } catch (unlinkErr) {
-        console.warn(`Could not delete file ${resource.filePath}:`, unlinkErr.message);
+    if (resource.filePath) {
+      const diskPath = path.isAbsolute(resource.filePath)
+        ? resource.filePath
+        : path.join(__dirname, '..', resource.filePath);
+      if (fs.existsSync(diskPath)) {
+        try {
+          fs.unlinkSync(diskPath);
+        } catch (unlinkErr) {
+          console.warn(`Could not delete file ${diskPath}:`, unlinkErr.message);
+        }
       }
     }
 

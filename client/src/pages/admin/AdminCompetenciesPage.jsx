@@ -175,18 +175,22 @@ const AdminCompetenciesPage = () => {
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 mb-2">
-            <Layers className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+    <div className="space-y-6 max-w-6xl mx-auto">
+      {/* ====================================================
+          1. HEADER HERO BANNER
+          ==================================================== */}
+      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 sm:p-7 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden transition-colors">
+        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -mr-16 -mt-16" />
+
+        <div className="space-y-1 relative z-10">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-semibold bg-[var(--surface-muted)] text-[var(--primary)] border border-[var(--border)]">
+            <Layers className="w-3.5 h-3.5" />
             <span>Capability Domains & Multi-Skill Frameworks</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
             Competency Architecture & Mapping
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-2xl">
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] max-w-2xl">
             Group individual technical and soft skills into overarching capability domains for dynamic trainee progress tracking and organizational capability intelligence.
           </p>
         </div>
@@ -195,7 +199,7 @@ const AdminCompetenciesPage = () => {
           variant="primary"
           size="md"
           onClick={openAddModal}
-          className="inline-flex items-center gap-2 text-xs font-semibold self-start sm:self-auto shrink-0"
+          className="inline-flex items-center gap-2 text-xs font-semibold self-start sm:self-auto shrink-0 z-10"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Competency</span>
@@ -221,22 +225,24 @@ const AdminCompetenciesPage = () => {
 
       {error && <ErrorMessage message={error} onRetry={() => setError(null)} />}
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm transition-colors">
+      {/* ====================================================
+          2. FILTER TOOLBAR
+          ==================================================== */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[var(--surface)] p-3.5 border border-[var(--border)] rounded-xl shadow-xs transition-colors">
         {/* Search */}
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search competencies by title or description..."
-            className="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full pl-9 pr-3.5 py-2 text-xs border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-colors"
           />
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5 w-full sm:w-auto">
+        <div className="flex items-center gap-1 w-full sm:w-auto">
           {[
             { label: 'All Frameworks', value: 'all' },
             { label: 'Active', value: 'active' },
@@ -248,8 +254,8 @@ const AdminCompetenciesPage = () => {
               onClick={() => setStatusFilter(f.value)}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                 statusFilter === f.value
-                  ? 'bg-slate-900 dark:bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  ? 'bg-[var(--primary)] text-white shadow-xs'
+                  : 'bg-[var(--surface-muted)] text-[var(--text-secondary)] hover:bg-[var(--border)]'
               }`}
             >
               {f.label}
@@ -258,43 +264,45 @@ const AdminCompetenciesPage = () => {
         </div>
       </div>
 
-      {/* Competencies Grid */}
+      {/* ====================================================
+          3. COMPETENCIES GRID
+          ==================================================== */}
       {loading ? (
-        <div className="py-20 flex justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+        <div className="py-20 flex justify-center bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xs">
           <Loading message="Loading platform competency architecture..." />
         </div>
       ) : filteredCompetencies.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm space-y-2">
-          <Layers className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />
-          <p className="font-semibold text-slate-700 dark:text-slate-200">No competency frameworks found matching your filter.</p>
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-12 text-center text-xs text-[var(--text-muted)] shadow-xs space-y-2">
+          <Layers className="w-8 h-8 text-[var(--text-muted)] mx-auto opacity-50" />
+          <p className="font-bold text-sm text-[var(--text-primary)]">No competency frameworks found matching your filter.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredCompetencies.map((comp) => (
             <div
               key={comp._id}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+              className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 shadow-xs space-y-4 flex flex-col justify-between hover:border-[var(--primary-border,#BFDBFE)] transition-colors"
             >
               <div className="space-y-3">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center shrink-0 border border-indigo-200 dark:border-indigo-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center shrink-0 border border-[var(--primary-border,#BFDBFE)]">
                       <Award className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{comp.name}</h3>
-                      <span className="text-[11px] text-slate-400 font-medium">
+                      <h3 className="text-sm font-bold text-[var(--text-primary)] leading-tight">{comp.name}</h3>
+                      <span className="text-[11px] text-[var(--text-muted)] font-medium">
                         {comp.skills?.length || 0} Required Skills Mapped
                       </span>
                     </div>
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded border shrink-0 ${
+                    className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-md border shrink-0 ${
                       comp.isActive
-                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                        : 'bg-[var(--surface-muted)] text-[var(--text-muted)] border-[var(--border)]'
                     }`}
                   >
                     {comp.isActive ? (
@@ -304,7 +312,7 @@ const AdminCompetenciesPage = () => {
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-3 h-3 text-slate-400" />
+                        <XCircle className="w-3 h-3 text-[var(--text-muted)]" />
                         <span>Inactive</span>
                       </>
                     )}
@@ -312,14 +320,14 @@ const AdminCompetenciesPage = () => {
                 </div>
 
                 {comp.description && (
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                     {comp.description}
                   </p>
                 )}
 
                 {/* Skills tags */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 block mb-1.5">
+                <div className="pt-2 border-t border-[var(--border)]">
+                  <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] block mb-1.5">
                     Standardized Skill Dependencies:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -330,10 +338,10 @@ const AdminCompetenciesPage = () => {
                         return (
                           <span
                             key={s._id || sName}
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium border ${
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
                               sCat === 'Soft Skill'
-                                ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800'
-                                : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                                ? 'bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                                : 'bg-[var(--primary-soft)] text-[var(--primary)] border-[var(--primary-border,#BFDBFE)]'
                             }`}
                           >
                             <Tag className="w-2.5 h-2.5 opacity-60" />
@@ -342,31 +350,30 @@ const AdminCompetenciesPage = () => {
                         );
                       })
                     ) : (
-                      <span className="text-slate-400 italic text-xs">No skills associated</span>
+                      <span className="text-[var(--text-muted)] italic text-xs">No skills associated</span>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-[var(--border)] flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => openEditModal(comp)}
-                  className="px-2.5 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors inline-flex items-center gap-1"
+                  className="px-2.5 py-1 text-xs font-semibold text-[var(--primary)] bg-[var(--primary-soft)] hover:bg-[var(--primary-soft)]/80 border border-[var(--primary-border,#BFDBFE)] rounded-lg transition-colors inline-flex items-center gap-1"
                 >
                   <Edit2 className="w-3 h-3" />
                   <span>Edit</span>
                 </button>
 
-                {/* Requirement 10: Clear dedicated push button */}
                 <button
                   type="button"
                   onClick={() => handleToggleStatus(comp)}
                   className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-colors inline-flex items-center gap-1 ${
                     comp.isActive
-                      ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100'
-                      : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                      ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100'
+                      : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
                   }`}
                 >
                   <Power className="w-3 h-3" />
@@ -376,7 +383,7 @@ const AdminCompetenciesPage = () => {
                 <button
                   type="button"
                   onClick={() => handleDeleteCompetency(comp)}
-                  className="p-1.5 text-slate-400 hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
+                  className="p-1.5 text-[var(--text-muted)] hover:text-red-700 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors"
                   title="Delete Competency"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -388,23 +395,23 @@ const AdminCompetenciesPage = () => {
       )}
 
       {/* ====================================================
-          MODAL: ADD / EDIT COMPETENCY WITH DEDICATED PUSH BUTTON
+          4. MODAL: ADD / EDIT COMPETENCY WITH DEDICATED PUSH BUTTON
           ==================================================== */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
+          <div className="bg-[var(--surface)] rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-[var(--border)] transition-colors">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 shrink-0">
+            <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-muted)] shrink-0">
               <div className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                <Award className="w-5 h-5 text-[var(--primary)]" />
+                <h3 className="text-base font-bold text-[var(--text-primary)]">
                   {editingCompetency ? 'Edit Competency Framework' : 'Add New Competency Framework'}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded"
+                className="p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -415,7 +422,7 @@ const AdminCompetenciesPage = () => {
               {error && <ErrorMessage message={error} />}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
                   Competency Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -425,13 +432,13 @@ const AdminCompetenciesPage = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Full Stack Development, Meteorological Data Analysis, Agile Leadership"
-                  className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium"
+                  className="w-full px-3 py-2 text-xs border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-medium transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Description <span className="text-slate-400 font-normal">(Optional)</span>
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">
+                  Description <span className="text-[var(--text-muted)] font-normal">(Optional)</span>
                 </label>
                 <textarea
                   rows={2}
@@ -439,7 +446,7 @@ const AdminCompetenciesPage = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe what proficiency in this capability domain signifies..."
-                  className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2 text-xs border border-[var(--border)] rounded-lg bg-[var(--surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors"
                 />
               </div>
 
@@ -452,23 +459,23 @@ const AdminCompetenciesPage = () => {
                 withProficiency={false}
               />
 
-              {/* Requirement 10: Dedicated Push Button instead of generic checkbox */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              {/* Dedicated Status Push Button */}
+              <div className="pt-2 border-t border-[var(--border)]">
+                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2">
                   Competency Availability Status
                 </label>
-                <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl">
+                <div className="flex items-center justify-between p-3 bg-[var(--surface-muted)] border border-[var(--border)] rounded-xl">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${
+                      className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border ${
                         formData.isActive
-                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                          : 'bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border)]'
                       }`}
                     >
                       {formData.isActive ? 'Active Status' : 'Deactivated'}
                     </span>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="text-[11px] text-[var(--text-muted)]">
                       {formData.isActive ? 'Visible in Trainee Competency matrix' : 'Hidden from Trainee dashboards'}
                     </span>
                   </div>
@@ -478,8 +485,8 @@ const AdminCompetenciesPage = () => {
                     onClick={() => setFormData({ ...formData, isActive: !formData.isActive })}
                     className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors inline-flex items-center gap-1.5 shadow-2xs ${
                       formData.isActive
-                        ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100'
-                        : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100'
+                        ? 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100'
+                        : 'border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100'
                     }`}
                   >
                     <Power className="w-3 h-3" />
@@ -488,11 +495,11 @@ const AdminCompetenciesPage = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2 shrink-0">
+              <div className="pt-4 border-t border-[var(--border)] flex items-center justify-end gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-muted)] transition-colors"
                 >
                   Cancel
                 </button>

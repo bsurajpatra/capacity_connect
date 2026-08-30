@@ -12,12 +12,16 @@ const api = axios.create({
   },
 });
 
-// Request Interceptor: Attach JWT Bearer token if present
+// Request Interceptor: Attach JWT Bearer token if present & handle FormData
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+    // If request payload is FormData, remove static Content-Type so browser sets boundary automatically
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
     }
     return config;
   },
@@ -40,7 +44,7 @@ export const cleanCourseTitle = (str) => {
 
 export const cleanUserFacingText = cleanCourseTitle;
 
-const ID_KEYS = new Set([
+const PRESERVED_KEYS = new Set([
   '_id',
   'id',
   'courseId',
@@ -57,6 +61,23 @@ const ID_KEYS = new Set([
   'thumbnail',
   'photo',
   'avatar',
+  'filePath',
+  'fileName',
+  'filename',
+  'fileUrl',
+  'path',
+  'externalUrl',
+  'pdfUrl',
+  'documentUrl',
+  'source',
+  'file',
+  'link',
+  'downloadUrl',
+  'email',
+  'phone',
+  'phoneNumber',
+  'code',
+  'certificateCode',
 ]);
 
 /**
@@ -70,8 +91,19 @@ const sanitizeCourseTitlesInData = (data) => {
   const result = { ...data };
   for (const key of Object.keys(result)) {
     const val = result[key];
+    const keyLower = key.toLowerCase();
+    const isFileOrUrlKey =
+      PRESERVED_KEYS.has(key) ||
+      keyLower.includes('file') ||
+      keyLower.includes('path') ||
+      keyLower.includes('url') ||
+      keyLower.includes('link') ||
+      keyLower.includes('photo') ||
+      keyLower.includes('image') ||
+      keyLower.includes('avatar');
+
     if (typeof val === 'string') {
-      if (!ID_KEYS.has(key)) {
+      if (!isFileOrUrlKey) {
         result[key] = cleanCourseTitle(val);
       }
     } else if (typeof val === 'object' && val !== null) {
@@ -168,8 +200,16 @@ export const deleteCourseApi = async (courseId) => {
 // ==========================================
 // Module APIs
 // ==========================================
-export const createModuleApi = async (courseId, moduleData) => {
-  const response = await api.post(`/courses/${courseId}/modules`, moduleData);
+export const createModuleApi = async (courseIdOrData, maybeModuleData) => {
+  let targetCourseId = courseIdOrData;
+  let payload = maybeModuleData;
+
+  if (typeof courseIdOrData === 'object' && courseIdOrData !== null && !maybeModuleData) {
+    targetCourseId = courseIdOrData.course || courseIdOrData.courseId;
+    payload = courseIdOrData;
+  }
+
+  const response = await api.post(`/courses/${targetCourseId}/modules`, payload);
   return response.data;
 };
 
@@ -197,8 +237,9 @@ export const updateModuleOrderApi = async (moduleId, order) => {
 // Resource APIs
 // ==========================================
 export const createResourceApi = async (moduleId, formDataOrJson, isMultipart = false) => {
+  const isFormData = typeof FormData !== 'undefined' && formDataOrJson instanceof FormData;
   const response = await api.post(`/modules/${moduleId}/resources`, formDataOrJson, {
-    headers: isMultipart ? { 'Content-Type': 'multipart/form-data' } : {},
+    headers: isFormData || isMultipart ? { 'Content-Type': 'multipart/form-data' } : {},
   });
   return response.data;
 };
@@ -332,6 +373,45 @@ export const getTrainerAssessmentsOverviewApi = async () => {
 
 export const getAssessmentByIdApi = async (assessmentId) => {
   const response = await api.get(`/assessments/${assessmentId}`);
+  return response.data;
+};
+
+// Phase 7.7: AI Assessment Question Generation & PDF Import APIs
+export const generateAiAssessmentQuestionsApi = async ({ courseId, moduleId, count = 5, difficulty = 'medium', topic = '' }) => {
+  const response = await api.post('/assessments/ai/generate-questions', {
+    courseId,
+    moduleId,
+    count,
+    difficulty,
+    topic,
+  });
+  return response.data;
+};
+
+export const regenerateAiAssessmentQuestionApi = async ({ courseId, moduleId, existingQuestionText, difficulty = 'medium', topic = '' }) => {
+  const response = await api.post('/assessments/ai/regenerate-question', {
+    courseId,
+    moduleId,
+    existingQuestionText,
+    difficulty,
+    topic,
+  });
+  return response.data;
+};
+
+export const importAssessmentPdfApi = async (formData) => {
+  const response = await api.post('/assessments/questions/import-pdf', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const suggestPdfQuestionAnswersApi = async ({ questions, courseId, moduleId }) => {
+  const response = await api.post('/assessments/questions/suggest-answers', {
+    questions,
+    courseId,
+    moduleId,
+  });
   return response.data;
 };
 

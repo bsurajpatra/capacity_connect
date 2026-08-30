@@ -695,8 +695,11 @@ const CourseDetailsPage = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                         {mod.resources.map((resItem) => {
                           const isLink = resItem.type === 'link';
+                          const backendOrigin = import.meta.env.VITE_API_URL
+                            ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '')
+                            : 'http://localhost:5002';
                           const fileUrl = resItem.filePath
-                            ? `http://localhost:5002/uploads/resources/${resItem.filePath.split(/[\\/]/).pop()}`
+                            ? `${backendOrigin}/uploads/resources/${resItem.filePath.replace(/\\/g, '/').split('/').pop()}`
                             : '';
 
                           return (
